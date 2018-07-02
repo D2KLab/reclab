@@ -1,0 +1,13 @@
+{
+  "mongodb": {
+    "host": "localhost",
+    "port": 27017,
+    "db": "reclab"
+  },
+  "datasets": {
+    "ml-latest-small": {
+      "format": "uirt",
+      "path": "datasets/ml-latest-small/ratings.csv"
+    }
+  }
+}
