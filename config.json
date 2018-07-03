@@ -14,6 +14,9 @@
   "recommenders": {
     "most_popular": {
       "url": "http://localhost:5001"
+    },
+    "random": {
+      "url": "http://localhost:5002"
     }
   }
 }
