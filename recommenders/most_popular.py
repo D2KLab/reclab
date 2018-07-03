@@ -15,13 +15,14 @@ phasesLock = Lock()
 
 class MostPopular(Thread):
 
-    def __init__(self, exp):
+    def __init__(self, exp, callback):
         super().__init__()
         self.exp = exp
+        self.callback = callback
 
     def run(self):
-        with urlopen("http://localhost:5000/dataset?id=" + str(self.exp)) as url:
-            ratings = json.loads(url.read().decode())
+        with urlopen(self.callback + "/dataset?id=" + str(self.exp)) as response:
+            ratings = json.loads(response.read().decode())
             model = {}
 
             for rating in ratings:
@@ -52,6 +53,10 @@ def setup():
     except ValueError:
         abort(400)
 
+    callback = request.args.get("callback")
+    if callback is None:
+        abort(400)
+
     # Check that the experiment is not running
     phasesLock.acquire()
     if exp in phases:
@@ -61,10 +66,11 @@ def setup():
     phases[exp] = "training"
     phasesLock.release()
 
-    recommender = MostPopular(exp)
+    recommender = MostPopular(exp, callback)
     recommender.start()
 
     return json.dumps({'id': exp,
+                       'callback': callback,
                        'status': "training"})
 
 
@@ -102,51 +108,8 @@ def clear():
                        'status': "clear"})
 
 
-@app.route("/predict", methods=['GET'])
+@app.route("/predict", methods=['POST'])
 def predict():
-    exp = request.args.get("id")
-    user = request.args.get("user")
-    item = request.args.get("item")
-    if exp is None or user is None or item is None:
-        abort(400)
-    try:
-        exp = int(exp)
-        user = int(user)
-        item = int(item)
-    except ValueError:
-        abort(400)
-
-    phasesLock.acquire()
-
-    if exp not in phases:
-        phasesLock.release()
-        abort(404)
-
-    if phases[exp] != "ready":
-        result = {'id': exp,
-                  'status': phases[exp]}
-        phasesLock.release()
-        return json.dumps(result)
-
-    modelsLock.acquire()
-    try:
-        rating = models[exp][item]
-    except KeyError:
-        rating = 0
-
-    modelsLock.release()
-    phasesLock.release()
-
-    result = {'id': exp,
-              'user': user,
-              'item': item,
-              'rating': rating}
-
-    return json.dumps(result)
-
-
-@app.route("/predict_all", methods=['POST'])
-def predict_all():
     exp = request.args.get("id")
     if exp is None:
         abort(400)

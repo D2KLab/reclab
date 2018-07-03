@@ -1,4 +1,5 @@
 {
+  "url": "http://localhost:5000",
   "mongodb": {
     "host": "localhost",
     "port": 27017,
@@ -8,6 +9,11 @@
     "ml-latest-small": {
       "format": "uirt",
       "path": "datasets/ml-latest-small/ratings.csv"
+    }
+  },
+  "recommenders": {
+    "most_popular": {
+      "url": "http://localhost:5001"
     }
   }
 }

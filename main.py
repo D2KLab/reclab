@@ -32,33 +32,42 @@ def settings():
 
 @app.route("/experiment", methods=['POST'])
 def experiment():
-    dataset_id = request.form.get("dataset")
-    if dataset_id not in config['datasets']:
+    content = request.json
+    if content is None:
         abort(400)
 
-    splitter = request.form.get("splitter")
-    if splitter not in reclab.splitter_list():
-        abort(400)
-
-    test_size = request.form.get("test_size")
     try:
-        test_size = float(test_size)
-    except ValueError:
-        abort(400)
+        if content['dataset'] not in config['datasets']:
+            abort(400)
 
-    if test_size < 0 or test_size > 1:
+        if content['splitter'] not in reclab.splitter_list():
+            abort(400)
+
+        try:
+            test_size = float(content['test_size'])
+            if test_size < 0 or test_size > 1:
+                abort(400)
+        except ValueError:
+            abort(400)
+
+        for recommender in content['recommenders']:
+            if recommender not in config['recommenders']:
+                abort(400)
+
+    except KeyError:
         abort(400)
 
     exp = {'id': next_id(),
-           'dataset': dataset_id,
+           'dataset': content['dataset'],
            'seed': random.random(),
-           'splitter': splitter,
-           'test_size': test_size}
+           'splitter': content['splitter'],
+           'test_size': float(content['test_size']),
+           'recommenders': content['recommenders']}
 
     db['experiments'].insert_one(exp)
 
     # Start the experiment
-    evaluator = reclab.Evaluator(exp['id'], db, config)
+    evaluator = reclab.Experiment(exp['id'], db, config)
     evaluator.start()
 
     del exp['_id']
