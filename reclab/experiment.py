@@ -1,3 +1,4 @@
+import inspect
 import json
 import time
 from threading import Thread
@@ -5,11 +6,12 @@ from urllib.error import URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen, Request
 
+from .evaluator import Evaluator
 from .loader import loader_instance
 from .splitter import splitter_instance
 
 
-def get_predict_set(exp, config):
+def get_test_set(exp, config):
     dataset_config = config['datasets'][exp['dataset']]
 
     # Load the dataset
@@ -18,8 +20,10 @@ def get_predict_set(exp, config):
 
     # Split the dataset
     splitter = splitter_instance(exp['splitter'], exp['test_size'], exp['seed'])
-    test_set = splitter.split(ratings)[1]
+    return splitter.split(ratings)[1]
 
+
+def get_predict_set(test_set):
     predict_set = []
 
     for rating in test_set:
@@ -88,7 +92,8 @@ class Experiment(Thread):
         if exp is None:
             return
 
-        predict_set = get_predict_set(exp, self.config)
+        test_set = get_test_set(exp, self.config)
+        predict_set = get_predict_set(test_set)
 
         for recommender in exp['recommenders']:
             result = {'name': recommender,
@@ -100,7 +105,15 @@ class Experiment(Thread):
 
             if predictions is None:
                 result['status'] = 'failed'
-            else:
-                result['status'] = 'done'
+                self.db['experiments'].save(exp)
+                continue
 
+            evaluator = Evaluator(test_set, predictions)
+
+            # For all the metrics
+            for name, obj in inspect.getmembers(evaluator):
+                if inspect.ismethod(obj) and not name.startswith('_'):
+                    result[name] = obj()
+
+            result['status'] = 'done'
             self.db['experiments'].save(exp)

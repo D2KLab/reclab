@@ -24,6 +24,8 @@ class MostPopular(Thread):
         with urlopen(self.callback + "/dataset?id=" + str(self.exp)) as response:
             ratings = json.loads(response.read().decode())
             model = {}
+            max_item = 0
+            max_rating = 0
 
             for rating in ratings:
                 item = rating[1]
@@ -32,6 +34,20 @@ class MostPopular(Thread):
                     model[item] += 1
                 else:
                     model[item] = 1
+
+                # Find the count of the most popular item
+                if max_item < model[item]:
+                    max_item = model[item]
+
+                value = rating[2]
+
+                # Find the maximum rating value
+                if max_rating < value:
+                    max_rating = value
+
+            # Normalize the scores
+            for item in model:
+                model[item] = model[item] / max_item * max_rating
 
             modelsLock.acquire()
             models[self.exp] = model
