@@ -16,3 +16,13 @@ class Evaluator:
         total /= len(self.test_set)
 
         return np.sqrt(total)
+
+    def mae(self):
+        total = 0
+
+        for i, rating in enumerate(self.test_set):
+            total += np.abs(rating[2] - self.predictions[i])
+
+        total /= len(self.test_set)
+
+        return total

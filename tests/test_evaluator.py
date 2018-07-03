@@ -19,3 +19,8 @@ class EvaluatorTestSuite(unittest.TestCase):
         evaluator = reclab.Evaluator(test_set, predictions)
         rmse = evaluator.rmse()
         self.assertAlmostEqual(math.sqrt(13 / 7), rmse)
+
+    def test_mae(self):
+        evaluator = reclab.Evaluator(test_set, predictions)
+        mae = evaluator.mae()
+        self.assertAlmostEqual(9 / 7, mae)
