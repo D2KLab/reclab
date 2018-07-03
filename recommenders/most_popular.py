@@ -1,6 +1,6 @@
 import json
-import urllib.request
 from threading import Thread, Lock
+from urllib.request import urlopen
 
 from flask import Flask, request, abort
 
@@ -20,7 +20,7 @@ class MostPopular(Thread):
         self.exp = exp
 
     def run(self):
-        with urllib.request.urlopen("http://localhost:5000/dataset?id=" + str(self.exp)) as url:
+        with urlopen("http://localhost:5000/dataset?id=" + str(self.exp)) as url:
             ratings = json.loads(url.read().decode())
             model = {}
 
@@ -143,6 +143,48 @@ def predict():
               'rating': rating}
 
     return json.dumps(result)
+
+
+@app.route("/predict_all", methods=['POST'])
+def predict_all():
+    exp = request.args.get("id")
+    if exp is None:
+        abort(400)
+    try:
+        exp = int(exp)
+    except ValueError:
+        abort(400)
+
+    content = request.json
+    if content is None:
+        abort(400)
+
+    phasesLock.acquire()
+
+    if exp not in phases:
+        phasesLock.release()
+        abort(404)
+
+    if phases[exp] != "ready":
+        result = {'id': exp,
+                  'status': phases[exp]}
+        phasesLock.release()
+        return json.dumps(result)
+
+    modelsLock.acquire()
+    predictions = []
+
+    for rating in content:
+        try:
+            prediction = models[exp][rating[1]]
+        except KeyError:
+            prediction = 0
+        predictions.append(prediction)
+
+    modelsLock.release()
+    phasesLock.release()
+
+    return json.dumps(predictions)
 
 
 @app.route("/status", methods=['GET'])

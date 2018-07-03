@@ -57,6 +57,10 @@ def experiment():
 
     db['experiments'].insert_one(exp)
 
+    # Start the experiment
+    evaluator = reclab.Evaluator(exp['id'], db, config)
+    evaluator.start()
+
     del exp['_id']
     return json.dumps(exp)
 
