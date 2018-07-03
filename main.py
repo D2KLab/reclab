@@ -30,10 +30,10 @@ def settings():
     return json.dumps({'datasets': config['datasets']})
 
 
-@app.route("/run", methods=['POST'])
-def run():
-    dataset = request.form.get("dataset")
-    if dataset not in config['datasets']:
+@app.route("/experiment", methods=['POST'])
+def experiment():
+    dataset_id = request.form.get("dataset")
+    if dataset_id not in config['datasets']:
         abort(400)
 
     splitter = request.form.get("splitter")
@@ -50,7 +50,7 @@ def run():
         abort(400)
 
     exp = {'id': next_id(),
-           'dataset': dataset,
+           'dataset': dataset_id,
            'seed': random.random(),
            'splitter': splitter,
            'test_size': test_size}
@@ -61,8 +61,8 @@ def run():
     return json.dumps(exp)
 
 
-@app.route("/training", methods=['GET'])
-def training():
+@app.route("/dataset", methods=['GET'])
+def dataset():
     exp_id = request.args.get("id")
     try:
         exp_id = int(exp_id)
@@ -77,11 +77,11 @@ def training():
 
     # Load the dataset
     loader = reclab.loader_instance(dataset_config['format'])
-    dataset = loader.load(dataset_config['path'])
+    ratings = loader.load(dataset_config['path'])
 
     # Split the dataset
     splitter = reclab.splitter_instance(exp['splitter'], exp['test_size'], exp['seed'])
-    training_set = splitter.split(dataset)[0]
+    training_set = splitter.split(ratings)[0]
 
     return json.dumps(training_set)
 
