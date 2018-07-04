@@ -92,8 +92,8 @@ class Evaluator:
         return values.mean()
 
     def ndcg(self):
-        dcg = np.full(len(self.test_set), 0.0, dtype=float)
-        idcg = np.full(len(self.test_set), 0.0, dtype=float)
+        dcg = np.full(len(self.user_set), 0.0, dtype=float)
+        idcg = np.full(len(self.user_set), 0.0, dtype=float)
 
         # For each user
         for user_index, user in enumerate(self.user_set):
