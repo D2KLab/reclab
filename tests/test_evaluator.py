@@ -4,7 +4,7 @@ import unittest
 import reclab
 
 exp = {'k': 3,
-       'threshold': 2}
+       'threshold': 1}
 test_set = [[1, 1, 5],
             [1, 2, 3],
             [1, 3, 5],
@@ -33,4 +33,9 @@ class EvaluatorTestSuite(unittest.TestCase):
     def test_precision(self):
         evaluator = reclab.Evaluator(exp, test_set, user_set, predictions, recommendations)
         precision = evaluator.precision()
-        self.assertAlmostEqual(2 / 3, precision)
+        self.assertAlmostEqual(5 / 6, precision)
+
+    def test_recall(self):
+        evaluator = reclab.Evaluator(exp, test_set, user_set, predictions, recommendations)
+        recall = evaluator.recall()
+        self.assertAlmostEqual(17 / 24, recall)
