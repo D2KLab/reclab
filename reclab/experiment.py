@@ -12,14 +12,12 @@ from .splitter import splitter_instance
 
 
 def get_test_set(exp, config):
-    dataset_config = config['datasets'][exp['dataset']]
-
     # Load the dataset
-    loader = loader_instance(dataset_config['format'])
-    ratings = loader.load(dataset_config['path'])
+    loader = loader_instance(config['datasets'][exp['dataset']])
+    ratings = loader.load()
 
     # Split the dataset
-    splitter = splitter_instance(exp['splitter'], exp['test_size'], exp['seed'])
+    splitter = splitter_instance(exp)
     return splitter.split(ratings)[1]
 
 

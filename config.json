@@ -6,9 +6,23 @@
     "db": "reclab"
   },
   "datasets": {
+    "ml-100k": {
+      "format": "uirt",
+      "path": "datasets/ml-100k/u.data",
+      "sep": "\t",
+      "skip": 0
+    },
+    "ml-1m": {
+      "format": "uirt",
+      "path": "datasets/ml-1m/ratings.dat",
+      "sep": "::",
+      "skip": 0
+    },
     "ml-latest-small": {
       "format": "uirt",
-      "path": "datasets/ml-latest-small/ratings.csv"
+      "path": "datasets/ml-latest-small/ratings.csv",
+      "sep": ",",
+      "skip": 1
     }
   },
   "recommenders": {

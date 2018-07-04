@@ -6,11 +6,11 @@ from abc import abstractmethod
 import pandas
 
 
-def loader_instance(loader_id, *args, **kwargs):
+def loader_instance(config):
     for name, obj in inspect.getmembers(sys.modules[__name__]):
-        if hasattr(obj, 'id') and obj.id == loader_id:
-            return obj(*args, **kwargs)
-    raise RuntimeError('No loader ' + loader_id)
+        if hasattr(obj, 'id') and obj.id == config['format']:
+            return obj(config['path'], config['sep'], config['skip'])
+    raise RuntimeError('No loader ' + config['format'])
 
 
 def loader_list():
@@ -28,19 +28,22 @@ class Loader(ABC):
         pass
 
     @abstractmethod
-    def load(self, file):
+    def load(self):
         pass
 
 
 class UIRTLoader(Loader):
     id = "uirt"
 
-    def __init__(self, skip=1):
+    def __init__(self, path, sep, skip):
+        self.path = path
+        self.sep = sep
         self.skip = skip
 
-    def load(self, file):
+    def load(self):
         # Read the input file
-        df_input = pandas.read_csv(file, names=['userId', 'itemId', 'rating', 'timestamp'], skiprows=self.skip)
+        df_input = pandas.read_csv(self.path, names=['userId', 'itemId', 'rating', 'timestamp'],
+                                   sep=self.sep, skiprows=self.skip, engine='python')
 
         # Create a list of ratings
         ratings = []

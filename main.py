@@ -102,14 +102,12 @@ def dataset():
     if exp is None:
         abort(404)
 
-    dataset_config = config['datasets'][exp['dataset']]
-
     # Load the dataset
-    loader = reclab.loader_instance(dataset_config['format'])
-    ratings = loader.load(dataset_config['path'])
+    loader = reclab.loader_instance(config['datasets'][exp['dataset']])
+    ratings = loader.load()
 
     # Split the dataset
-    splitter = reclab.splitter_instance(exp['splitter'], exp['test_size'], exp['seed'])
+    splitter = reclab.splitter_instance(exp)
     training_set = splitter.split(ratings)[0]
 
     return json.dumps(training_set)
