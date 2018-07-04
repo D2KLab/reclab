@@ -11,14 +11,14 @@ from .loader import loader_instance
 from .splitter import splitter_instance
 
 
-def get_test_set(exp, config):
+def get_training_test_set(exp, config):
     # Load the dataset
     loader = loader_instance(config['datasets'][exp['dataset']])
     ratings = loader.load()
 
     # Split the dataset
     splitter = splitter_instance(exp)
-    return splitter.split(ratings)[1]
+    return splitter.split(ratings)
 
 
 def get_predict_set(test_set):
@@ -112,7 +112,7 @@ class Experiment(Thread):
         if exp is None:
             return
 
-        test_set = get_test_set(exp, self.config)
+        training_set, test_set = get_training_test_set(exp, self.config)
         predict_set = get_predict_set(test_set)
         user_set = get_user_set(test_set)
 
@@ -129,7 +129,7 @@ class Experiment(Thread):
                 self.db['experiments'].save(exp)
                 continue
 
-            evaluator = Evaluator(exp, test_set, user_set, predictions, recommendations)
+            evaluator = Evaluator(exp, training_set, test_set, user_set, predictions, recommendations)
 
             # For all the metrics
             for name, obj in inspect.getmembers(evaluator):
