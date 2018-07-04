@@ -60,6 +60,7 @@ class Evaluator:
 
             hit = 0
 
+            # For each item
             for item in predicted_list:
                 if item in reference_list:
                     hit += 1
@@ -78,6 +79,7 @@ class Evaluator:
 
             hit = 0
 
+            # For each item
             for item in predicted_list:
                 if item in reference_list:
                     hit += 1
@@ -88,3 +90,21 @@ class Evaluator:
                 pass
 
         return values.mean()
+
+    def ndcg(self):
+        dcg = np.full(len(self.test_set), 0.0, dtype=float)
+        idcg = np.full(len(self.test_set), 0.0, dtype=float)
+
+        # For each user
+        for user_index, user in enumerate(self.user_set):
+            predicted_list = self.recommendations[user_index]
+            reference_list = self.reference_sorted[user]
+
+            # For each item
+            for i, item in enumerate(predicted_list):
+                idcg[user_index] += 1 / np.log2(i + 2)
+
+                if item in reference_list:
+                    dcg[user_index] += 1 / np.log2(i + 2)
+
+        return dcg.mean() / idcg.mean()

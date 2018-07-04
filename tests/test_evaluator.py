@@ -39,3 +39,8 @@ class EvaluatorTestSuite(unittest.TestCase):
         evaluator = reclab.Evaluator(exp, test_set, user_set, predictions, recommendations)
         recall = evaluator.recall()
         self.assertAlmostEqual(17 / 24, recall)
+
+    def test_ndcg(self):
+        evaluator = reclab.Evaluator(exp, test_set, user_set, predictions, recommendations)
+        ndcg = evaluator.ndcg()
+        self.assertAlmostEqual(0.8826803184, ndcg)
