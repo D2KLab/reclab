@@ -11,7 +11,7 @@ from .loader import loader_instance
 from .splitter import splitter_instance
 
 
-def get_training_test_set(exp, config):
+def get_splitted_dataset(exp, config):
     # Load the dataset
     loader = loader_instance(config['datasets'][exp['dataset']])
     ratings = loader.load()
@@ -19,15 +19,6 @@ def get_training_test_set(exp, config):
     # Split the dataset
     splitter = splitter_instance(exp)
     return splitter.split(ratings)
-
-
-def get_predict_set(test_set):
-    predict_set = []
-
-    for rating in test_set:
-        predict_set.append([rating[0], rating[1]])
-
-    return predict_set
 
 
 def get_user_set(test_set):
@@ -39,7 +30,7 @@ def get_user_set(test_set):
     return list(user_set)
 
 
-def run_recommender(exp, recommender, predict_set, user_set, config):
+def run_recommender(exp, recommender, user_set, config):
     url = config['recommenders'][recommender]['url']
 
     # Train the recommender
@@ -64,18 +55,6 @@ def run_recommender(exp, recommender, predict_set, user_set, config):
         except KeyError:
             return
 
-    # Get estimated ratings
-    request = Request(url + "/predict?id=" + str(exp['id']))
-    request.add_header('Content-Type', 'application/json; charset=utf-8')
-    request_json = json.dumps(predict_set).encode('utf-8')
-    request.add_header('Content-Length', len(request_json))
-
-    try:
-        response = urlopen(request, request_json)
-        predictions = json.loads(response.read().decode())
-    except URLError:
-        return
-
     # Get top-k recommendations
     request = Request(url + "/recommend?id=" + str(exp['id']) + "&k=" + str(exp['k']))
     request.add_header('Content-Type', 'application/json; charset=utf-8')
@@ -94,7 +73,7 @@ def run_recommender(exp, recommender, predict_set, user_set, config):
     except URLError:
         pass
 
-    return predictions, recommendations
+    return recommendations
 
 
 class Experiment(Thread):
@@ -112,8 +91,7 @@ class Experiment(Thread):
         if exp is None:
             return
 
-        training_set, test_set = get_training_test_set(exp, self.config)
-        predict_set = get_predict_set(test_set)
+        training_set, test_set = get_splitted_dataset(exp, self.config)
         user_set = get_user_set(test_set)
 
         for recommender in exp['recommenders']:
@@ -122,14 +100,14 @@ class Experiment(Thread):
             exp['results'].append(result)
             self.db['experiments'].save(exp)
 
-            predictions, recommendations = run_recommender(exp, recommender, predict_set, user_set, self.config)
+            recommendations = run_recommender(exp, recommender, user_set, self.config)
 
-            if predictions is None or recommendations is None:
+            if recommendations is None:
                 result['status'] = 'failed'
                 self.db['experiments'].save(exp)
                 continue
 
-            evaluator = Evaluator(exp, training_set, test_set, user_set, predictions, recommendations)
+            evaluator = Evaluator(exp, training_set, test_set, user_set, recommendations)
 
             # For all the metrics
             for name, obj in inspect.getmembers(evaluator):

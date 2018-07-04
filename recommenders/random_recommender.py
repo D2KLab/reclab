@@ -24,15 +24,12 @@ class MostPopular(Thread):
     def run(self):
         with urlopen(self.callback + "/dataset?id=" + str(self.exp)) as response:
             ratings = json.loads(response.read().decode())
-            model = {'items': set(),
-                     'ratings': set()}
+            model = set()
 
             for rating in ratings:
-                model['items'].add(rating[1])
-                model['ratings'].add(rating[2])
+                model.add(rating[1])
 
-            model['items'] = list(model['items'])
-            model['ratings'] = list(model['ratings'])
+            model = list(model)
 
             modelsLock.acquire()
             models[self.exp] = model
@@ -109,46 +106,6 @@ def clear():
                        'status': "clear"})
 
 
-@app.route("/predict", methods=['POST'])
-def predict():
-    exp = request.args.get("id")
-    if exp is None:
-        abort(400)
-    try:
-        exp = int(exp)
-    except ValueError:
-        abort(400)
-
-    content = request.json
-    if content is None:
-        abort(400)
-
-    phasesLock.acquire()
-
-    if exp not in phases:
-        phasesLock.release()
-        abort(404)
-
-    if phases[exp] != "ready":
-        result = {'id': exp,
-                  'status': phases[exp]}
-        phasesLock.release()
-        return json.dumps(result)
-
-    modelsLock.acquire()
-    predictions = []
-
-    for rating in content:
-        del rating
-        prediction = random.choice(models[exp]['ratings'])
-        predictions.append(prediction)
-
-    modelsLock.release()
-    phasesLock.release()
-
-    return json.dumps(predictions)
-
-
 @app.route("/recommend", methods=['POST'])
 def recommend():
     exp = request.args.get("id")
@@ -185,7 +142,7 @@ def recommend():
 
     for user in content:
         del user
-        top_k = random.sample(models[exp]['items'], k)
+        top_k = random.sample(models[exp], k)
         recommendations.append(top_k)
 
     modelsLock.release()

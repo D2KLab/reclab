@@ -3,13 +3,11 @@ import numpy as np
 
 class Evaluator:
 
-    def __init__(self, exp, training_set, test_set, user_set, predictions, recommendations):
+    def __init__(self, exp, training_set, test_set, user_set, recommendations):
         self.k = exp['k']
-        self.distribution = self._get_distribution(training_set)
-        self.test_set = test_set
         self.user_set = user_set
-        self.predictions = predictions
         self.recommendations = recommendations
+        self.distribution = self._get_distribution(training_set)
         self.reference_sorted = self._get_reference_sorted(test_set, exp['threshold'])
 
     @staticmethod
@@ -47,26 +45,6 @@ class Evaluator:
             distribution[item] /= len(training_set)
 
         return distribution
-
-    def rmse(self):
-        total = 0
-
-        for i, rating in enumerate(self.test_set):
-            total += np.power(rating[2] - self.predictions[i], 2)
-
-        total /= len(self.test_set)
-
-        return np.sqrt(total)
-
-    def mae(self):
-        total = 0
-
-        for i, rating in enumerate(self.test_set):
-            total += np.abs(rating[2] - self.predictions[i])
-
-        total /= len(self.test_set)
-
-        return total
 
     def precision(self):
         values = np.full(len(self.user_set), 0.0, dtype=float)

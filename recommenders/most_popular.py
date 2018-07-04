@@ -23,35 +23,23 @@ class MostPopular(Thread):
     def run(self):
         with urlopen(self.callback + "/dataset?id=" + str(self.exp)) as response:
             ratings = json.loads(response.read().decode())
-            model = {"dict": {},
-                     "top_k": [],
-                     "max_item": 0,
-                     "max_rating": 0}
+            model_dict = {}
+            model_top_k = []
 
             for rating in ratings:
                 item = rating[1]
 
-                if item in model['dict']:
-                    model['dict'][item] += 1
+                if item in model_dict:
+                    model_dict[item] += 1
                 else:
-                    model['dict'][item] = 1
-
-                # Find the count of the most popular item
-                if model['max_item'] < model['dict'][item]:
-                    model['max_item'] = model['dict'][item]
-
-                value = rating[2]
-
-                # Find the maximum rating value
-                if model['max_rating'] < value:
-                    model['max_rating'] = value
+                    model_dict[item] = 1
 
             # Sort items by the number of ratings
-            for item in sorted(model['dict'], key=model['dict'].get, reverse=True):
-                model['top_k'].append(item)
+            for item in sorted(model_dict, key=model_dict.get, reverse=True):
+                model_top_k.append(item)
 
             modelsLock.acquire()
-            models[self.exp] = model
+            models[self.exp] = model_top_k
 
             phasesLock.acquire()
             phases[self.exp] = "ready"
@@ -125,49 +113,6 @@ def clear():
                        'status': "clear"})
 
 
-@app.route("/predict", methods=['POST'])
-def predict():
-    exp = request.args.get("id")
-    if exp is None:
-        abort(400)
-    try:
-        exp = int(exp)
-    except ValueError:
-        abort(400)
-
-    content = request.json
-    if content is None:
-        abort(400)
-
-    phasesLock.acquire()
-
-    if exp not in phases:
-        phasesLock.release()
-        abort(404)
-
-    if phases[exp] != "ready":
-        result = {'id': exp,
-                  'status': phases[exp]}
-        phasesLock.release()
-        return json.dumps(result)
-
-    modelsLock.acquire()
-    model = models[exp]
-    predictions = []
-
-    for rating in content:
-        try:
-            prediction = model['dict'][rating[1]] / model['max_item'] * model['max_rating']
-        except KeyError:
-            prediction = 0
-        predictions.append(prediction)
-
-    modelsLock.release()
-    phasesLock.release()
-
-    return json.dumps(predictions)
-
-
 @app.route("/recommend", methods=['POST'])
 def recommend():
     exp = request.args.get("id")
@@ -205,7 +150,7 @@ def recommend():
 
     for user in content:
         del user
-        recommendations.append(model['top_k'][0:k])
+        recommendations.append(model[0:k])
 
     modelsLock.release()
     phasesLock.release()
