@@ -8,7 +8,10 @@ exp = {'k': 3,
 training_set = [[1, 1, 5],
                 [1, 2, 4],
                 [1, 3, 3],
-                [1, 4, 3]]
+                [1, 4, 3],
+                [2, 2, 3],
+                [2, 3, 1],
+                [2, 1, 4]]
 
 test_set = [[1, 1, 5],
             [1, 2, 3],
@@ -44,4 +47,9 @@ class EvaluatorTestSuite(unittest.TestCase):
     def test_novelty(self):
         evaluator = reclab.Evaluator(exp, training_set, test_set, user_set, recommendations)
         novelty = evaluator.novelty()
-        self.assertAlmostEqual(2, novelty)
+        self.assertAlmostEqual(2.1406882554, novelty)
+
+    def test_diversity(self):
+        evaluator = reclab.Evaluator(exp, training_set, test_set, user_set, recommendations)
+        diversity = evaluator.diversity()
+        self.assertAlmostEqual(0, diversity)  # TODO

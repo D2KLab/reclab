@@ -2,3 +2,4 @@ flask
 numpy
 pandas
 pymongo
+scipy

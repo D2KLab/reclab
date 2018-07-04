@@ -1,4 +1,8 @@
+import itertools
+
 import numpy as np
+
+from .similarity import CosineSimilarity
 
 
 class Evaluator:
@@ -9,6 +13,7 @@ class Evaluator:
         self.recommendations = recommendations
         self.distribution = self._get_distribution(training_set)
         self.reference_sorted = self._get_reference_sorted(test_set, exp['threshold'])
+        self.metric = CosineSimilarity(training_set, exp['threshold'])
 
     @staticmethod
     def _get_reference_sorted(test_set, threshold):
@@ -123,5 +128,19 @@ class Evaluator:
 
             metric *= -1 * (1 / self.k)
             values[user_index] = metric
+
+        return values.mean()
+
+    def diversity(self):
+        values = np.full(len(self.user_set), 0.0, dtype=float)
+
+        # For each user
+        for user_index, user in enumerate(self.user_set):
+            predicted_list = self.recommendations[user_index]
+
+            for items in itertools.combinations(predicted_list, 2):
+                values[user_index] += (1 - self.metric.similarity(items[0], items[1]))
+
+            values[user_index] /= self.k * (self.k - 1) * 0.5
 
         return values.mean()
