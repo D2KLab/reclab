@@ -32,12 +32,21 @@ def get_predict_set(test_set):
     return predict_set
 
 
-def get_predictions(exp_id, recommender, predict_set, config):
+def get_user_set(test_set):
+    user_set = set()
+
+    for rating in test_set:
+        user_set.add(rating[0])
+
+    return list(user_set)
+
+
+def run_recommender(exp, recommender, predict_set, user_set, config):
     url = config['recommenders'][recommender]['url']
 
     # Train the recommender
     try:
-        query = {'id': exp_id,
+        query = {'id': exp['id'],
                  'callback': config['url']}
         urlopen(url + "/setup?" + urlencode(query))
     except URLError:
@@ -49,7 +58,7 @@ def get_predictions(exp_id, recommender, predict_set, config):
     while status != "ready":
         time.sleep(1)
         try:
-            with urlopen(url + "/status?id=" + str(exp_id)) as response:
+            with urlopen(url + "/status?id=" + str(exp['id'])) as response:
                 response_json = json.loads(response.read().decode())
                 status = response_json['status']
         except URLError:
@@ -57,7 +66,8 @@ def get_predictions(exp_id, recommender, predict_set, config):
         except KeyError:
             return
 
-    request = Request(url + "/predict?id=" + str(exp_id))
+    # Get estimated ratings
+    request = Request(url + "/predict?id=" + str(exp['id']))
     request.add_header('Content-Type', 'application/json; charset=utf-8')
     request_json = json.dumps(predict_set).encode('utf-8')
     request.add_header('Content-Length', len(request_json))
@@ -68,13 +78,25 @@ def get_predictions(exp_id, recommender, predict_set, config):
     except URLError:
         return
 
+    # Get top-k recommendations
+    request = Request(url + "/recommend?id=" + str(exp['id']) + "&k=" + str(exp['k']))
+    request.add_header('Content-Type', 'application/json; charset=utf-8')
+    request_json = json.dumps(user_set).encode('utf-8')
+    request.add_header('Content-Length', len(request_json))
+
+    try:
+        response = urlopen(request, request_json)
+        recommendations = json.loads(response.read().decode())
+    except URLError:
+        return
+
     # Clear the model
     try:
-        urlopen(url + "/clear?id=" + str(exp_id))
+        urlopen(url + "/clear?id=" + str(exp['id']))
     except URLError:
         pass
 
-    return predictions
+    return predictions, recommendations
 
 
 class Experiment(Thread):
@@ -94,6 +116,7 @@ class Experiment(Thread):
 
         test_set = get_test_set(exp, self.config)
         predict_set = get_predict_set(test_set)
+        user_set = get_user_set(test_set)
 
         for recommender in exp['recommenders']:
             result = {'name': recommender,
@@ -101,14 +124,14 @@ class Experiment(Thread):
             exp['results'].append(result)
             self.db['experiments'].save(exp)
 
-            predictions = get_predictions(self.exp_id, recommender, predict_set, self.config)
+            predictions, recommendations = run_recommender(exp, recommender, predict_set, user_set, self.config)
 
-            if predictions is None:
+            if predictions is None or recommendations is None:
                 result['status'] = 'failed'
                 self.db['experiments'].save(exp)
                 continue
 
-            evaluator = Evaluator(test_set, predictions)
+            evaluator = Evaluator(exp, test_set, user_set, predictions, recommendations)
 
             # For all the metrics
             for name, obj in inspect.getmembers(evaluator):

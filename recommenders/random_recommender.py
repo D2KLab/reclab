@@ -24,13 +24,18 @@ class MostPopular(Thread):
     def run(self):
         with urlopen(self.callback + "/dataset?id=" + str(self.exp)) as response:
             ratings = json.loads(response.read().decode())
-            model = set()
+            model = {'items': set(),
+                     'ratings': set()}
 
             for rating in ratings:
-                model.add(rating[2])
+                model['items'].add(rating[1])
+                model['ratings'].add(rating[2])
+
+            model['items'] = list(model['items'])
+            model['ratings'] = list(model['ratings'])
 
             modelsLock.acquire()
-            models[self.exp] = list(model)
+            models[self.exp] = model
 
             phasesLock.acquire()
             phases[self.exp] = "ready"
@@ -135,13 +140,58 @@ def predict():
 
     for rating in content:
         del rating
-        prediction = random.choice(models[exp])
+        prediction = random.choice(models[exp]['ratings'])
         predictions.append(prediction)
 
     modelsLock.release()
     phasesLock.release()
 
     return json.dumps(predictions)
+
+
+@app.route("/recommend", methods=['POST'])
+def recommend():
+    exp = request.args.get("id")
+    k = request.args.get("k")
+    if exp is None or k is None:
+        abort(400)
+    try:
+        exp = int(exp)
+        k = int(k)
+    except ValueError:
+        abort(400)
+
+    if k <= 0:
+        abort(400)
+
+    content = request.json
+    if content is None:
+        abort(400)
+
+    phasesLock.acquire()
+
+    if exp not in phases:
+        phasesLock.release()
+        abort(404)
+
+    if phases[exp] != "ready":
+        result = {'id': exp,
+                  'status': phases[exp]}
+        phasesLock.release()
+        return json.dumps(result)
+
+    modelsLock.acquire()
+    recommendations = []
+
+    for user in content:
+        del user
+        top_k = random.sample(models[exp]['items'], k)
+        recommendations.append(top_k)
+
+    modelsLock.release()
+    phasesLock.release()
+
+    return json.dumps(recommendations)
 
 
 @app.route("/status", methods=['GET'])
