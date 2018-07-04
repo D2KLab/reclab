@@ -5,6 +5,7 @@ class Evaluator:
 
     def __init__(self, exp, test_set, user_set, predictions, recommendations):
         self.k = exp['k']
+        self.threshold = exp['threshold']
         self.test_set = test_set
         self.user_set = user_set
         self.predictions = predictions
@@ -31,8 +32,9 @@ class Evaluator:
         return total
 
     @staticmethod
-    def _get_top_k(ratings, k):
+    def _get_top_k(ratings, k, threshold):
         ratings.sort(key=lambda x: x[1], reverse=True)
+        ratings = list(filter(lambda x: x[1] > threshold, ratings))
         return list(map(lambda x: x[0], ratings))[0: k]
 
     def precision(self):
@@ -51,7 +53,7 @@ class Evaluator:
         # For each user
         for user_index, user in enumerate(self.user_set):
             predicted_list = self.recommendations[user_index]
-            reference_list = self._get_top_k(reference_ratings[user], self.k)
+            reference_list = self._get_top_k(reference_ratings[user], self.k, self.threshold)
 
             hit = 0
 
@@ -59,6 +61,6 @@ class Evaluator:
                 if item in reference_list:
                     hit += 1
 
-            values[user_index] = hit / len(reference_list)
+            values[user_index] = hit / self.k
 
         return values.mean()

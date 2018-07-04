@@ -3,7 +3,8 @@ import unittest
 
 import reclab
 
-exp = {'k': 3}
+exp = {'k': 3,
+       'threshold': 2}
 test_set = [[1, 1, 5],
             [1, 2, 3],
             [1, 3, 5],

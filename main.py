@@ -57,6 +57,13 @@ def experiment():
         except ValueError:
             abort(400)
 
+        try:
+            threshold = int(content['threshold'])
+            if threshold <= 0:
+                abort(400)
+        except ValueError:
+            abort(400)
+
         for recommender in content['recommenders']:
             if recommender not in config['recommenders']:
                 abort(400)
@@ -70,6 +77,7 @@ def experiment():
            'splitter': content['splitter'],
            'test_size': float(content['test_size']),
            'k': int(content['k']),
+           'threshold': int(content['threshold']),
            'recommenders': content['recommenders']}
 
     db['experiments'].insert_one(exp)
