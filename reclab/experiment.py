@@ -43,16 +43,17 @@ def run_recommender(exp, recommender, user_set, config):
 
     # Wait for the recommender
     status = None
+    counter = 0
 
     while status != "ready":
         time.sleep(1)
+        counter += 1
         try:
+            assert counter <= 600
             with urlopen(url + "/status?id=" + str(exp['id'])) as response:
                 response_json = json.loads(response.read().decode())
                 status = response_json['status']
-        except URLError:
-            return
-        except KeyError:
+        except (URLError, KeyError, AssertionError):
             return
 
     # Get top-k recommendations
@@ -102,7 +103,12 @@ class Experiment(Thread):
 
             recommendations = run_recommender(exp, recommender, user_set, self.config)
 
-            if recommendations is None:
+            try:
+                assert recommendations is not None
+                assert len(recommendations) == len(user_set)
+                for recommendation in recommendations:
+                    assert len(recommendation) <= exp['k']
+            except AssertionError:
                 result['status'] = 'failed'
                 self.db['experiments'].save(exp)
                 continue

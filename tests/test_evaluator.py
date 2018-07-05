@@ -36,6 +36,13 @@ class EvaluatorTestSuite(unittest.TestCase):
         precision = evaluator.precision()
         self.assertAlmostEqual(5 / 6, precision)
 
+    def test_precision_threshold(self):
+        local_exp = {'k': 3,
+                     'threshold': 3}
+        evaluator = reclab.Evaluator(local_exp, training_set, test_set, user_set, recommendations)
+        precision = evaluator.precision()
+        self.assertAlmostEqual(1 / 2, precision)
+
     def test_recall(self):
         evaluator = reclab.Evaluator(exp, training_set, test_set, user_set, recommendations)
         recall = evaluator.recall()
