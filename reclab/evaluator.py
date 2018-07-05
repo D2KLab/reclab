@@ -9,9 +9,13 @@ from .similarity import CosineSimilarity
 def evaluator_list():
     evaluators = {}
     for name, obj in inspect.getmembers(Evaluator):
-        if hasattr(obj, 'name') and isinstance(obj.name, str):
-            evaluators[name] = {'name': obj.name}
-    return evaluators
+        if hasattr(obj, 'name') and hasattr(obj, 'sort'):
+            evaluators[name] = {'name': obj.name,
+                                'sort': obj.sort}
+    sorted_evaluators = {}
+    for key in sorted(evaluators, key=lambda x: evaluators[x]['sort']):
+        sorted_evaluators[key] = evaluators[key]
+    return sorted_evaluators
 
 
 class Evaluator:
@@ -80,6 +84,7 @@ class Evaluator:
         return values.mean()
 
     precision.name = "Precision"
+    precision.sort = 1
 
     def recall(self):
         values = np.full(len(self.user_set), 0.0, dtype=float)
@@ -104,6 +109,7 @@ class Evaluator:
         return values.mean()
 
     recall.name = "Recall"
+    recall.sort = 2
 
     def ndcg(self):
         dcg = np.full(len(self.user_set), 0.0, dtype=float)
@@ -124,6 +130,7 @@ class Evaluator:
         return dcg.mean() / idcg.mean()
 
     ndcg.name = "nDCG"
+    ndcg.sort = 3
 
     def novelty(self):
         values = np.full(len(self.user_set), 0.0, dtype=float)
@@ -147,6 +154,7 @@ class Evaluator:
         return values.mean()
 
     novelty.name = "Novelty"
+    novelty.sort = 4
 
     def diversity(self):
         values = np.full(len(self.user_set), 0.0, dtype=float)
@@ -163,3 +171,4 @@ class Evaluator:
         return values.mean()
 
     diversity.name = "Diversity"
+    diversity.sort = 5
