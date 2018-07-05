@@ -1,5 +1,7 @@
 import unittest
 
+import numpy as np
+
 import reclab
 
 exp = {'k': 3,
@@ -42,14 +44,14 @@ class EvaluatorTestSuite(unittest.TestCase):
     def test_ndcg(self):
         evaluator = reclab.Evaluator(exp, training_set, test_set, user_set, recommendations)
         ndcg = evaluator.ndcg()
-        self.assertAlmostEqual(0.8826803184, ndcg)
+        self.assertAlmostEqual(np.log(3888) / np.log(11664), ndcg)
 
     def test_novelty(self):
         evaluator = reclab.Evaluator(exp, training_set, test_set, user_set, recommendations)
         novelty = evaluator.novelty()
-        self.assertAlmostEqual(2.1406882554, novelty)
+        self.assertAlmostEqual(np.log(7) / np.log(2) - 2 / 3, novelty)
 
     def test_diversity(self):
         evaluator = reclab.Evaluator(exp, training_set, test_set, user_set, recommendations)
         diversity = evaluator.diversity()
-        self.assertAlmostEqual(0, diversity)  # TODO
+        self.assertAlmostEqual((2 - np.sqrt(2)) / 3, diversity)
