@@ -16,13 +16,14 @@ def loader_instance(config):
 def loader_list():
     loaders = []
     for name, obj in inspect.getmembers(sys.modules[__name__]):
-        if hasattr(obj, 'id'):
+        if hasattr(obj, 'id') and isinstance(obj.id, str):
             loaders.append(obj.id)
     return loaders
 
 
 class Loader(ABC):
 
+    @property
     @abstractmethod
     def id(self):
         pass

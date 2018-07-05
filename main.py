@@ -1,7 +1,7 @@
 import json
 import random
 
-from flask import Flask, request, abort
+from flask import Flask, render_template, request, abort
 from pymongo import MongoClient
 
 import reclab
@@ -25,9 +25,12 @@ def next_id():
         return 1
 
 
-@app.route("/settings", methods=['GET'])
-def settings():
-    return json.dumps({'datasets': config['datasets']})
+@app.route("/configs", methods=['GET'])
+def configs():
+    return json.dumps({'datasets': config['datasets'],
+                       'recommenders': config['recommenders'],
+                       'splitters': reclab.splitter_list(),
+                       'metrics': reclab.evaluator_list()})
 
 
 @app.route("/experiment", methods=['POST'])
@@ -78,7 +81,8 @@ def experiment():
            'test_size': float(content['test_size']),
            'k': int(content['k']),
            'threshold': float(content['threshold']),
-           'recommenders': content['recommenders']}
+           'recommenders': content['recommenders'],
+           'results': []}
 
     db['experiments'].insert_one(exp)
 
@@ -130,6 +134,11 @@ def status():
 
     del exp['_id']
     return json.dumps(exp)
+
+
+@app.route("/")
+def main():
+    return render_template("index.html")
 
 
 if __name__ == "__main__":

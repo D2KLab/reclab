@@ -87,8 +87,6 @@ class Experiment(Thread):
 
     def run(self):
         exp = self.db['experiments'].find_one({'id': self.exp_id})
-        exp['results'] = []
-
         if exp is None:
             return
 

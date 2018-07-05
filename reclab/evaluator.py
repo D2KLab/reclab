@@ -1,8 +1,17 @@
+import inspect
 import itertools
 
 import numpy as np
 
 from .similarity import CosineSimilarity
+
+
+def evaluator_list():
+    evaluators = {}
+    for name, obj in inspect.getmembers(Evaluator):
+        if hasattr(obj, 'name') and isinstance(obj.name, str):
+            evaluators[name] = {'name': obj.name}
+    return evaluators
 
 
 class Evaluator:
@@ -70,6 +79,8 @@ class Evaluator:
 
         return values.mean()
 
+    precision.name = "Precision"
+
     def recall(self):
         values = np.full(len(self.user_set), 0.0, dtype=float)
 
@@ -92,6 +103,8 @@ class Evaluator:
 
         return values.mean()
 
+    recall.name = "Recall"
+
     def ndcg(self):
         dcg = np.full(len(self.user_set), 0.0, dtype=float)
         idcg = np.full(len(self.user_set), 0.0, dtype=float)
@@ -109,6 +122,8 @@ class Evaluator:
                     dcg[user_index] += 1 / np.log2(i + 2)
 
         return dcg.mean() / idcg.mean()
+
+    ndcg.name = "nDCG"
 
     def novelty(self):
         values = np.full(len(self.user_set), 0.0, dtype=float)
@@ -131,6 +146,8 @@ class Evaluator:
 
         return values.mean()
 
+    novelty.name = "Novelty"
+
     def diversity(self):
         values = np.full(len(self.user_set), 0.0, dtype=float)
 
@@ -144,3 +161,5 @@ class Evaluator:
             values[user_index] /= self.k * (self.k - 1) * 0.5
 
         return values.mean()
+
+    diversity.name = "Diversity"

@@ -7,29 +7,29 @@
   },
   "datasets": {
     "ml-100k": {
+      "name": "MovieLens 100K",
+      "desc": "100,000 ratings from 1000 users on 1700 movies. Released 4/1998.",
       "format": "uirt",
       "path": "datasets/ml-100k/u.data",
       "sep": "\t",
       "skip": 0
     },
     "ml-1m": {
+      "name": "MovieLens 1M",
+      "desc": "1 million ratings from 6000 users on 4000 movies. Released 2/2003.",
       "format": "uirt",
       "path": "datasets/ml-1m/ratings.dat",
       "sep": "::",
       "skip": 0
-    },
-    "ml-latest-small": {
-      "format": "uirt",
-      "path": "datasets/ml-latest-small/ratings.csv",
-      "sep": ",",
-      "skip": 1
     }
   },
   "recommenders": {
-    "most_popular": {
+    "random": {
+      "name": "Random",
       "url": "http://localhost:5001"
     },
-    "random": {
+    "most_popular": {
+      "name": "Most Popular",
       "url": "http://localhost:5002"
     }
   }

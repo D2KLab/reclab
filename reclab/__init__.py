@@ -1,4 +1,5 @@
 from .evaluator import Evaluator
+from .evaluator import evaluator_list
 from .experiment import Experiment
 from .loader import loader_instance
 from .loader import loader_list

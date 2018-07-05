@@ -13,10 +13,11 @@ def splitter_instance(config):
 
 
 def splitter_list():
-    splitters = []
+    splitters = {}
     for name, obj in inspect.getmembers(sys.modules[__name__]):
-        if hasattr(obj, 'id'):
-            splitters.append(obj.id)
+        if hasattr(obj, 'id') and isinstance(obj.id, str):
+            splitters[obj.id] = {'name': obj.name,
+                                 'desc': obj.desc}
     return splitters
 
 
@@ -28,8 +29,19 @@ class Splitter(ABC):
             raise ValueError('Test size must be a number between 0 and 1')
         self.test_size = test_size
 
+    @property
     @abstractmethod
     def id(self):
+        pass
+
+    @property
+    @abstractmethod
+    def name(self):
+        pass
+
+    @property
+    @abstractmethod
+    def desc(self):
         pass
 
     @abstractmethod
@@ -39,6 +51,8 @@ class Splitter(ABC):
 
 class RandomSplitter(Splitter):
     id = "random"
+    name = "Random"
+    desc = "Split all the ratings at random."
 
     def split(self, ratings):
         training_set = []
@@ -64,6 +78,8 @@ class RandomSplitter(Splitter):
 
 class TimestampSplitter(Splitter):
     id = "timestamp"
+    name = "Timestamp"
+    desc = "Split all the ratings according to their timestamp."
 
     def split(self, ratings):
         training_set = []
