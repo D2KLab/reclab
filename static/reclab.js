@@ -3,6 +3,8 @@ $(function () {
     let exp_id;
 
     function initializeImmutableForm(json) {
+        if ($('.btn').prop('disabled') === true)
+            return;
         $('.btn').prop('disabled', true);
 
         // Datasets
@@ -197,10 +199,13 @@ $(function () {
         }
     }
 
-    function loadExperiment(id) {
-        $.getJSON('/status', {id: id}, function (json) {
+    function loadExperiment() {
+        $.getJSON('/status', {id: exp_id}, function (json) {
             initializeImmutableForm(json);
-            createResultsTable(json);
+            let running = createResultsTable(json);
+            if (json['results'].length !== json['recommenders'].length || running === true) {
+                setTimeout(loadExperiment, 1000);
+            }
         });
     }
 
@@ -208,7 +213,8 @@ $(function () {
         configs = json;
         let id = getId();
         if (id > 0) {
-            loadExperiment(id);
+            exp_id = id;
+            loadExperiment();
         } else {
             initializeForm();
         }
