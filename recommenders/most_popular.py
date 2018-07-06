@@ -23,23 +23,30 @@ class MostPopular(Thread):
     def run(self):
         with urlopen(self.callback + "/dataset?id=" + str(self.exp)) as response:
             ratings = json.loads(response.read().decode())
-            model_dict = {}
+            model_items = {}
+            model_users = {}
             model_top_k = []
 
             for rating in ratings:
+                user = rating[0]
                 item = rating[1]
 
-                if item in model_dict:
-                    model_dict[item] += 1
+                if item in model_items:
+                    model_items[item] += 1
                 else:
-                    model_dict[item] = 1
+                    model_items[item] = 1
+
+                if user not in model_users:
+                    model_users[user] = set()
+                model_users[user].add(item)
 
             # Sort items by the number of ratings
-            for item in sorted(model_dict, key=model_dict.get, reverse=True):
+            for item in sorted(model_items, key=model_items.get, reverse=True):
                 model_top_k.append(item)
 
             modelsLock.acquire()
-            models[self.exp] = model_top_k
+            models[self.exp] = {'top_k': model_top_k,
+                                'users': model_users}
 
             phasesLock.acquire()
             phases[self.exp] = "ready"
@@ -149,8 +156,16 @@ def recommend():
     recommendations = []
 
     for user in content:
-        del user
-        recommendations.append(model[0:k])
+        counter = 0
+        top_k = []
+        for target_item in model['top_k']:
+            if target_item not in model['users'][user]:
+                counter += 1
+                top_k.append(target_item)
+            if counter >= k:
+                break
+
+        recommendations.append(top_k)
 
     modelsLock.release()
     phasesLock.release()
