@@ -52,7 +52,7 @@ class Splitter(ABC):
 class RandomSplitter(Splitter):
     id = "random"
     name = "Random"
-    desc = "Split all the ratings at random."
+    desc = "Split the ratings at random."
 
     def split(self, ratings):
         training_set = []
@@ -79,7 +79,7 @@ class RandomSplitter(Splitter):
 class TimestampSplitter(Splitter):
     id = "timestamp"
     name = "Timestamp"
-    desc = "Split all the ratings according to their timestamp."
+    desc = "Split the ratings according to their timestamp."
 
     def split(self, ratings):
         training_set = []
