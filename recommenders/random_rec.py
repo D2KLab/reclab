@@ -1,4 +1,5 @@
 import json
+import random
 from threading import Thread, Lock
 
 import requests
@@ -30,30 +31,15 @@ class Trainer(Thread):
             r = requests.get(self.callback + "/dataset/" + str(self.exp_id), timeout=60)
             r.raise_for_status()
             ratings = json.loads(r.text)
-            model_items = {}
-            model_users = {}
-            model_top_k = []
+            model_items = set()
 
             for rating in ratings:
-                user = rating[0]
                 item = rating[1]
 
-                if item in model_items:
-                    model_items[item] += 1
-                else:
-                    model_items[item] = 1
-
-                if user not in model_users:
-                    model_users[user] = set()
-                model_users[user].add(item)
-
-            # Sort items by the number of ratings
-            for item in sorted(model_items, key=model_items.get, reverse=True):
-                model_top_k.append(item)
+                model_items.add(item)
 
             models_lock.acquire()
-            models[self.exp_id] = {'top_k': model_top_k,
-                                   'users': model_users,
+            models[self.exp_id] = {'items': model_items,
                                    'recommendations': None}
 
             phases_lock.acquire()
@@ -61,7 +47,8 @@ class Trainer(Thread):
             models_lock.release()
             phases_lock.release()
 
-        except (HTTPError, Timeout, ValueError, TypeError, KeyError):
+        except (HTTPError, Timeout, ValueError, TypeError, KeyError) as e:
+            print(e)
             phases_lock.acquire()
             del phases[self.exp_id]
             phases_lock.release()
@@ -82,15 +69,8 @@ class Recommender(Thread):
             recommendations = []
 
             for user in self.user_set:
-                counter = 0
-                top_k = []
-                for target_item in model['top_k']:
-                    if target_item not in model['users'][user]:
-                        counter += 1
-                        top_k.append(target_item)
-                    if counter >= self.k:
-                        break
-
+                del user
+                top_k = random.sample(model['items'], self.k)
                 recommendations.append(top_k)
 
             phases_lock.acquire()
@@ -116,4 +96,4 @@ api.add_resource(Recommendation, '/recommendation/<int:exp_id>',
 
 
 if __name__ == "__main__":
-    app.run(port=5002)
+    app.run(port=5001)

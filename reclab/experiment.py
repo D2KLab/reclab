@@ -2,9 +2,9 @@ import inspect
 import json
 import time
 from threading import Thread
-from urllib.error import URLError
-from urllib.parse import urlencode
-from urllib.request import urlopen, Request
+
+import requests
+from requests.exceptions import HTTPError, Timeout
 
 from .evaluator import Evaluator
 from .loader import loader_instance
@@ -35,43 +35,61 @@ def run_recommender(exp, recommender, user_set, config):
 
     # Train the recommender
     try:
-        query = {'id': exp['id'],
-                 'callback': config['url']}
-        urlopen(url + "/setup?" + urlencode(query))
-    except URLError:
+        r = requests.post(url + '/model/' + str(exp['id']), json={'callback': config['url']}, timeout=60)
+        r.raise_for_status()
+    except (HTTPError, Timeout):
         return
 
     # Wait for the recommender
     status = None
-    counter = 0
+    counter = 1
 
     while status != "ready":
-        time.sleep(1)
+        time.sleep(counter)
         counter += 1
         try:
-            assert counter <= 600
-            with urlopen(url + "/status?id=" + str(exp['id'])) as response:
-                response_json = json.loads(response.read().decode())
-                status = response_json['status']
-        except (URLError, KeyError, AssertionError):
+            assert counter <= 60
+            r = requests.get(url + '/model/' + str(exp['id']), timeout=60)
+            r.raise_for_status()
+            response_json = json.loads(r.text)
+            status = response_json['status']
+        except (HTTPError, Timeout, KeyError, AssertionError):
             return
 
     # Get top-k recommendations
-    request = Request(url + "/recommend?id=" + str(exp['id']) + "&k=" + str(exp['k']))
-    request.add_header('Content-Type', 'application/json; charset=utf-8')
-    request_json = json.dumps(user_set).encode('utf-8')
-    request.add_header('Content-Length', len(request_json))
-
     try:
-        response = urlopen(request, request_json)
-        recommendations = json.loads(response.read().decode())
-    except URLError:
+        r = requests.post(url + "/recommendation/" + str(exp['id']) + "?k=" + str(exp['k']), json=user_set, timeout=60)
+        r.raise_for_status()
+    except (HTTPError, Timeout):
         return
 
-    # Clear the model
+    # Wait for the recommender
+    status = None
+    response_json = None
+    counter = 1
+
+    while status != "ready":
+        time.sleep(counter)
+        counter += 1
+        try:
+            assert counter <= 60
+            r = requests.get(url + '/recommendation/' + str(exp['id']), timeout=60)
+            r.raise_for_status()
+            response_json = json.loads(r.text)
+            status = response_json['status']
+        except (HTTPError, Timeout, KeyError, AssertionError):
+            return
+
     try:
-        urlopen(url + "/clear?id=" + str(exp['id']))
-    except URLError:
+        recommendations = response_json['recommendations']
+    except KeyError:
+        return
+
+    # Delete the model
+    try:
+        r = requests.delete(url + '/model/' + str(exp['id']), timeout=60)
+        r.raise_for_status()
+    except (HTTPError, Timeout):
         pass
 
     return recommendations

@@ -1,6 +1,7 @@
 $(function () {
     let configs;
     let exp_id;
+    let counter = 1;
 
     function initializeImmutableForm(json) {
         if ($('.btn').prop('disabled') === true)
@@ -105,6 +106,7 @@ $(function () {
     }
 
     function createResultsTable(json) {
+        counter++;
         let running = false;
         let result = $('#result').empty();
 
@@ -151,6 +153,7 @@ $(function () {
     $('#run-experiment').submit(function () {
         $('.btn').prop('disabled', true);
         $('#result').empty();
+        counter = 1;
 
         let form = $(this);
         let exp = {
@@ -163,10 +166,10 @@ $(function () {
         };
 
         function updateResults() {
-            $.getJSON('/status', {id: exp_id}, function (json) {
+            $.getJSON('/experiment/' + exp_id, function (json) {
                 let running = createResultsTable(json);
                 if (json['results'].length !== json['recommenders'].length || running === true) {
-                    setTimeout(updateResults, 1000);
+                    setTimeout(updateResults, counter * 1000);
                 } else {
                     $('.btn').prop('disabled', false);
                 }
@@ -200,16 +203,16 @@ $(function () {
     }
 
     function loadExperiment() {
-        $.getJSON('/status', {id: exp_id}, function (json) {
+        $.getJSON('/experiment/' + exp_id, function (json) {
             initializeImmutableForm(json);
             let running = createResultsTable(json);
             if (json['results'].length !== json['recommenders'].length || running === true) {
-                setTimeout(loadExperiment, 1000);
+                setTimeout(loadExperiment, counter * 1000);
             }
         });
     }
 
-    $.getJSON('/configs', function (json) {
+    $.getJSON('/config', function (json) {
         configs = json;
         let id = getId();
         if (id > 0) {

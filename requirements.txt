@@ -1,5 +1,7 @@
 flask
+flask-restful
 numpy
 pandas
 pymongo
+requests
 scipy
