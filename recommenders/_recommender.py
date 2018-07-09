@@ -34,6 +34,15 @@ class Model(Resource):
         except KeyError:
             abort(400)
 
+        try:
+            threshold = float(content['threshold'])
+            if threshold < 0:
+                abort(400)
+        except (KeyError, ValueError):
+            abort(400)
+
+        threshold = float(content['threshold'])
+
         self.phases_lock.acquire()
         if exp_id in self.phases:
             self.phases_lock.release()
@@ -42,10 +51,11 @@ class Model(Resource):
         self.phases[exp_id] = "training"
         self.phases_lock.release()
 
-        self.trainer(exp_id, content['callback']).start()
+        self.trainer(exp_id, content['callback'], threshold).start()
 
         return {'id': exp_id,
                 'callback': content['callback'],
+                'threshold': threshold,
                 'status': "training"}, 202
 
     def delete(self, exp_id):

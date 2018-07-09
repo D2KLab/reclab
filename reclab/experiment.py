@@ -35,7 +35,8 @@ def run_recommender(exp, recommender, user_set, config):
 
     # Train the recommender
     try:
-        r = requests.post(url + '/model/' + str(exp['id']), json={'callback': config['url']}, timeout=60)
+        r = requests.post(url + '/model/' + str(exp['id']),
+                          json={'callback': config['url'], 'threshold': exp['threshold']}, timeout=60)
         r.raise_for_status()
     except (HTTPError, Timeout):
         return

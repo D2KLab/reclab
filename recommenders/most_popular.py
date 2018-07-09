@@ -20,10 +20,11 @@ phases_lock = Lock()
 
 class Trainer(Thread):
 
-    def __init__(self, exp_id, callback):
+    def __init__(self, exp_id, callback, threshold):
         super().__init__()
         self.exp_id = exp_id
         self.callback = callback
+        self.threshold = threshold
 
     def run(self):
         try:
