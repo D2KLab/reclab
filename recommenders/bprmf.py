@@ -7,7 +7,7 @@ from threading import Thread, Lock
 import requests
 from flask import Flask
 from flask_restful import Api
-from requests.exceptions import HTTPError, Timeout
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 
 from recommenders import Model, Recommendation
 
@@ -72,8 +72,8 @@ class Trainer(Thread):
             subprocess.run("mono " + exec_path +
                            "/item_recommendation.exe "
                            "--training-file=" + exp_path + "/training.txt "
-                                                           "--recommender=BPRMF "
-                                                           "--save-model=" + exp_path + "/model.txt", shell=True,
+                           "--recommender=BPRMF "
+                           "--save-model=" + exp_path + "/model.txt", shell=True,
                            check=True)
 
             models_lock.acquire()
@@ -86,7 +86,7 @@ class Trainer(Thread):
             models_lock.release()
             phases_lock.release()
 
-        except (HTTPError, Timeout, SubprocessError, ValueError, TypeError, KeyError):
+        except (ConnectionError, HTTPError, Timeout, SubprocessError, ValueError, TypeError, KeyError):
             phases_lock.acquire()
             subprocess.run("rm -r " + exp_path, shell=True)
             del phases[self.exp_id]
@@ -114,10 +114,10 @@ class Recommender(Thread):
             subprocess.run("mono " + exec_path +
                            "/item_recommendation.exe "
                            "--training-file=" + exp_path + "/training.txt "
-                                                           "--recommender=BPRMF "
-                                                           "--load-model=" + exp_path + "/model.txt "
-                                                                                        "--test-users=" + exp_path + "/users.txt "
-                                                                                                                     "--prediction-file=" + exp_path + "/recommendations.txt",
+                           "--recommender=BPRMF "
+                           "--load-model=" + exp_path + "/model.txt "
+                           "--test-users=" + exp_path + "/users.txt "
+                           "--prediction-file=" + exp_path + "/recommendations.txt",
                            shell=True, check=True)
 
             mml_rec = {}

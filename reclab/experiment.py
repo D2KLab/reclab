@@ -4,7 +4,7 @@ import time
 from threading import Thread
 
 import requests
-from requests.exceptions import HTTPError, Timeout
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 
 from .evaluator import Evaluator
 from .loader import loader_instance
@@ -38,7 +38,7 @@ def run_recommender(exp, recommender, user_set, config):
         r = requests.post(url + '/model/' + str(exp['id']),
                           json={'callback': config['url'], 'threshold': exp['threshold']}, timeout=60)
         r.raise_for_status()
-    except (HTTPError, Timeout):
+    except (ConnectionError, HTTPError, Timeout):
         return
 
     # Wait for the recommender
@@ -54,14 +54,14 @@ def run_recommender(exp, recommender, user_set, config):
             r.raise_for_status()
             response_json = json.loads(r.text)
             status = response_json['status']
-        except (HTTPError, Timeout, KeyError, AssertionError):
+        except (ConnectionError, HTTPError, Timeout, KeyError, AssertionError):
             return
 
     # Get top-k recommendations
     try:
         r = requests.post(url + "/recommendation/" + str(exp['id']) + "?k=" + str(exp['k']), json=user_set, timeout=60)
         r.raise_for_status()
-    except (HTTPError, Timeout):
+    except (ConnectionError, HTTPError, Timeout):
         return
 
     # Wait for the recommender
@@ -78,7 +78,7 @@ def run_recommender(exp, recommender, user_set, config):
             r.raise_for_status()
             response_json = json.loads(r.text)
             status = response_json['status']
-        except (HTTPError, Timeout, KeyError, AssertionError):
+        except (ConnectionError, HTTPError, Timeout, KeyError, AssertionError):
             return
 
     try:
@@ -90,7 +90,7 @@ def run_recommender(exp, recommender, user_set, config):
     try:
         r = requests.delete(url + '/model/' + str(exp['id']), timeout=60)
         r.raise_for_status()
-    except (HTTPError, Timeout):
+    except (ConnectionError, HTTPError, Timeout):
         pass
 
     return recommendations

@@ -5,7 +5,7 @@ from threading import Thread, Lock
 import requests
 from flask import Flask
 from flask_restful import Api
-from requests.exceptions import HTTPError, Timeout
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 
 from recommenders import Model, Recommendation
 
@@ -48,8 +48,7 @@ class Trainer(Thread):
             models_lock.release()
             phases_lock.release()
 
-        except (HTTPError, Timeout, ValueError, TypeError, KeyError) as e:
-            print(e)
+        except (ConnectionError, HTTPError, Timeout, ValueError, TypeError, KeyError):
             phases_lock.acquire()
             del phases[self.exp_id]
             phases_lock.release()
