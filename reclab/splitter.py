@@ -58,17 +58,12 @@ class RandomSplitter(Splitter):
         training_set = []
         test_set = []
 
-        # Randomize the ratings
-        random_ratings = list(ratings)
+        # Ensure reproducibility
         random.seed(self.seed)
-        random.shuffle(random_ratings)
-
-        # Target number of ratings in the training set
-        target_training = len(random_ratings) * (1 - self.test_size)
 
         # Put the ratings in the test or training sets
-        for counter, rating in enumerate(random_ratings):
-            if counter < target_training:
+        for rating in ratings:
+            if random.random() > self.test_size:
                 training_set.append(rating)
             else:
                 test_set.append(rating)
