@@ -31,6 +31,10 @@
     "most_popular": {
       "name": "Most Popular",
       "url": "http://localhost:5002"
+    },
+    "bprmf": {
+      "name": "BPRMF",
+      "url": "http://localhost:5003"
     }
   }
 }

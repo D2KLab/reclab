@@ -70,11 +70,11 @@ class Trainer(Thread):
 
 class Recommender(Thread):
 
-    def __init__(self, exp_id, k, user_set):
+    def __init__(self, exp_id, user_set, k):
         super().__init__()
         self.exp_id = exp_id
-        self.k = k
         self.user_set = user_set
+        self.k = k
 
     def run(self):
         model = models[self.exp_id]

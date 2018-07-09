@@ -153,7 +153,7 @@ class Recommendation(Resource):
         self.phases[exp_id] = "recommending"
         self.phases_lock.release()
 
-        self.recommender(exp_id, k, user_set).start()
+        self.recommender(exp_id, user_set, k).start()
 
         return {'id': exp_id,
                 'status': "recommending"}, 202
