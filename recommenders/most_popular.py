@@ -85,7 +85,11 @@ class Recommender(Thread):
                 counter = 0
                 top_k = []
                 for target_item in model['top_k']:
-                    if target_item not in model['users'][user]:
+                    try:
+                        if target_item not in model['users'][user]:
+                            counter += 1
+                            top_k.append(target_item)
+                    except KeyError:
                         counter += 1
                         top_k.append(target_item)
                     if counter >= self.k:
