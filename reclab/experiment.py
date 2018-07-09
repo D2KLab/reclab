@@ -42,7 +42,7 @@ def run_recommender(exp, recommender, user_set, config):
 
     # Wait for the recommender
     status = None
-    counter = 1
+    counter = 0
 
     while status != "ready":
         time.sleep(counter)
@@ -66,7 +66,7 @@ def run_recommender(exp, recommender, user_set, config):
     # Wait for the recommender
     status = None
     response_json = None
-    counter = 1
+    counter = 0
 
     while status != "ready":
         time.sleep(counter)
