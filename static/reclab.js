@@ -41,7 +41,7 @@ $(function () {
             let option = $('<option>');
             option.attr('value', recommender);
             option.text(name);
-            if (!$.inArray(recommender, json['recommenders'])) {
+            if (json['recommenders'].includes(recommender)) {
                 option.attr('selected', 'selected');
             }
             recommenders.append(option);
@@ -128,7 +128,11 @@ $(function () {
             tr.append($('<td>').text(configs['recommenders'][recommender]['name']));
             if (json['results'][i]['status'] === 'done') {
                 for (let metric in configs['metrics']) {
-                    tr.append($('<td>').text(json['results'][i][metric].toFixed(6)));
+                    if (json['results'][i][metric]) {
+                        tr.append($('<td>').text(json['results'][i][metric].toFixed(6)));
+                    } else {
+                        tr.append($('<td>'));
+                    }
                 }
             } else if (json['results'][i]['status'] === 'running') {
                 running = true;
