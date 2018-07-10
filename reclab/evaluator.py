@@ -64,6 +64,22 @@ class Evaluator:
 
         return distribution
 
+    def coverage(self):
+        recommended_items = set()
+
+        # For each user
+        for user_index, user in enumerate(self.user_set):
+            predicted_list = self.recommendations[user_index]
+
+            # For each item
+            for item in predicted_list:
+                recommended_items.add(item)
+
+        return len(recommended_items) / len(self.distribution)
+
+    coverage.name = "Coverage"
+    coverage.sort = 0
+
     def precision(self):
         values = np.full(len(self.user_set), 0.0, dtype=float)
 

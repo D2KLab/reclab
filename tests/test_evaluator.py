@@ -31,6 +31,11 @@ recommendations = [[3, 1, 4],
 
 class EvaluatorTestSuite(unittest.TestCase):
 
+    def test_coverage(self):
+        evaluator = reclab.Evaluator(exp, training_set, test_set, user_set[:1], recommendations[:1])
+        coverage = evaluator.coverage()
+        self.assertAlmostEqual(3 / 4, coverage)
+
     def test_precision(self):
         evaluator = reclab.Evaluator(exp, training_set, test_set, user_set, recommendations)
         precision = evaluator.precision()
