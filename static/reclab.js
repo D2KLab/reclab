@@ -144,7 +144,7 @@ $(function () {
 
         let url = window.location.protocol + '//' + window.location.host +
             window.location.pathname + '?id=' + json['id'];
-        let p = $('<p>').html('This experiment is available at <a href="' + url + '">' + url + '</a>.');
+        let p = $('<p>').html('This experiment is available at <a href="' + url + '">' + url + '</a>. RecLab version ' + json['version'] + '.');
         result.append(p);
 
         return running

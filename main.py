@@ -80,6 +80,7 @@ class Experiment(Resource):
             abort(400)
 
         exp = {'id': next_id(),
+               'version': config['version'],
                'dataset': content['dataset'],
                'seed': random.random(),
                'splitter': content['splitter'],
