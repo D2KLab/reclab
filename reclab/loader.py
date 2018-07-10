@@ -3,8 +3,6 @@ import sys
 from abc import ABC
 from abc import abstractmethod
 
-import pandas
-
 
 def loader_instance(config):
     for name, obj in inspect.getmembers(sys.modules[__name__]):
@@ -33,6 +31,52 @@ class Loader(ABC):
         pass
 
 
+class UIRLoader(Loader):
+    id = "uir"
+
+    def __init__(self, path, sep, skip):
+        self.path = path
+        self.sep = sep
+        self.skip = skip
+
+    def load(self):
+        ratings = []
+        users = {}
+        user_counter = 0
+        items = {}
+        item_counter = 0
+
+        # Read the input file
+        with open(self.path) as fp:
+            for counter, line in enumerate(fp.readlines()):
+                # Ignore the first lines
+                if counter < self.skip:
+                    continue
+
+                row = line.replace("\"", "").split(self.sep)
+
+                if row[0] not in users:
+                    users[row[0]] = user_counter
+                    user_counter += 1
+
+                user = users[row[0]]
+
+                if row[1] not in items:
+                    items[row[1]] = item_counter
+                    item_counter += 1
+
+                item = items[row[1]]
+
+                if row[2].find(".") >= 0:
+                    value = float(row[2])
+                else:
+                    value = int(row[2])
+
+                ratings.append([user, item, value, counter])
+
+        return ratings
+
+
 class UIRTLoader(Loader):
     id = "uirt"
 
@@ -42,13 +86,40 @@ class UIRTLoader(Loader):
         self.skip = skip
 
     def load(self):
-        # Read the input file
-        df_input = pandas.read_csv(self.path, names=['userId', 'itemId', 'rating', 'timestamp'],
-                                   sep=self.sep, skiprows=self.skip, engine='python')
-
-        # Create a list of ratings
         ratings = []
-        for row in df_input.itertuples():
-            ratings.append([row[1], row[2], row[3], row[4]])
+        users = {}
+        user_counter = 0
+        items = {}
+        item_counter = 0
+
+        # Read the input file
+        with open(self.path) as fp:
+            for counter, line in enumerate(fp.readlines()):
+                # Ignore the first lines
+                if counter < self.skip:
+                    continue
+
+                row = line.replace("\"", "").split(self.sep)
+
+                if row[0] not in users:
+                    users[row[0]] = user_counter
+                    user_counter += 1
+
+                user = users[row[0]]
+
+                if row[1] not in items:
+                    items[row[1]] = item_counter
+                    item_counter += 1
+
+                item = items[row[1]]
+
+                if row[2].find(".") >= 0:
+                    value = float(row[2])
+                else:
+                    value = int(row[2])
+
+                timestamp = int(row[3])
+
+                ratings.append([user, item, value, timestamp])
 
         return ratings

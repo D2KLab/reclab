@@ -9,19 +9,35 @@
   "datasets": {
     "ml-100k": {
       "name": "MovieLens 100K",
-      "desc": "100,000 ratings from 1000 users on 1700 movies. Released 4/1998.",
+      "desc": "100,000 ratings from 1,000 users on 1,700 movies.",
       "format": "uirt",
-      "path": "datasets/ml-100k/u.data",
+      "path": "datasets/ml-100k/ratings.csv",
       "sep": "\t",
       "skip": 0
     },
     "ml-1m": {
       "name": "MovieLens 1M",
-      "desc": "1 million ratings from 6000 users on 4000 movies. Released 2/2003.",
+      "desc": "1 million ratings from 6,000 users on 4,000 movies.",
       "format": "uirt",
-      "path": "datasets/ml-1m/ratings.dat",
+      "path": "datasets/ml-1m/ratings.csv",
       "sep": "::",
       "skip": 0
+    },
+    "librarything": {
+      "name": "LibraryThing",
+      "desc": "749,401 ratings from 7,279 users on 37,232 books.",
+      "format": "uir",
+      "path": "datasets/librarything/ratings.csv",
+      "sep": " ",
+      "skip": 0
+    },
+    "lastfm": {
+      "name": "LastFM",
+      "desc": "92,834 user-artist relations from 1,892 users on 17,632 artists.",
+      "format": "uir",
+      "path": "datasets/lastfm/ratings.csv",
+      "sep": "\t",
+      "skip": 1
     }
   },
   "recommenders": {
