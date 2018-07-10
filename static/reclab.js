@@ -41,7 +41,7 @@ $(function () {
             let option = $('<option>');
             option.attr('value', recommender);
             option.text(name);
-            if ($.inArray(json['recommenders'], recommender)) {
+            if (!$.inArray(recommender, json['recommenders'])) {
                 option.attr('selected', 'selected');
             }
             recommenders.append(option);
