@@ -14,7 +14,7 @@ phases = {}
 models_lock = Lock()
 phases_lock = Lock()
 
-Trainer, Recommender, Model, Recommendation = mymedialite(models, models_lock, phases, phases_lock, "BPRMF")
+Trainer, Recommender, Model, Recommendation = mymedialite(models, models_lock, phases, phases_lock, "WRMF")
 
 api.add_resource(Model, '/model/<int:exp_id>',
                  resource_class_args=(models, models_lock, phases, phases_lock, Trainer))
@@ -22,4 +22,4 @@ api.add_resource(Recommendation, '/recommendation/<int:exp_id>',
                  resource_class_args=(models, models_lock, phases, phases_lock, Recommender))
 
 if __name__ == "__main__":
-    app.run(port=5005)
+    app.run(port=5006)
