@@ -1,13 +1,13 @@
 import json
 import random
 
+import requests
 from flask import Flask, render_template, request
 from flask_restful import Resource, Api, abort
 from pymongo import MongoClient
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 
 import reclab
-
-random.seed()
 
 with open('config.json') as f:
     config = json.load(f)
@@ -128,9 +128,32 @@ class Config(Resource):
                 'metrics': reclab.evaluator_list()}
 
 
+class Status(Resource):
+
+    @staticmethod
+    def get():
+        status = {}
+        down = False
+
+        for recommender in config['recommenders']:
+            try:
+                r = requests.get(config['recommenders'][recommender]['url'], timeout=5)
+                r.raise_for_status()
+                status[recommender] = "up"
+            except (ConnectionError, HTTPError, Timeout):
+                status[recommender] = "down"
+                down = True
+
+        if down:
+            return status, 503
+        else:
+            return status
+
+
 api.add_resource(Experiment, '/experiment', '/experiment/<int:exp_id>')
 api.add_resource(Dataset, '/dataset/<int:exp_id>')
 api.add_resource(Config, '/config')
+api.add_resource(Status, '/status')
 
 
 @app.route("/")

@@ -95,5 +95,10 @@ api.add_resource(Recommendation, '/recommendation/<int:exp_id>',
                  resource_class_args=(models, models_lock, phases, phases_lock, Recommender))
 
 
+@app.route("/")
+def main():
+    return "Random"
+
+
 if __name__ == "__main__":
     app.run(port=5001)
