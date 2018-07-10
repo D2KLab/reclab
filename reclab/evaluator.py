@@ -24,12 +24,12 @@ class Evaluator:
         self.k = exp['k']
         self.user_set = user_set
         self.recommendations = recommendations
-        self.distribution = self._get_distribution(training_set)
-        self.reference_sorted = self._get_reference_sorted(test_set, exp['threshold'])
+        self.model_items, self.model_top_k = self._count_items(training_set)
+        self.reference_sorted = self._reference_sorted(test_set, exp['threshold'])
         self.metric = CosineSimilarity(training_set, exp['threshold'])
 
     @staticmethod
-    def _get_reference_sorted(test_set, threshold):
+    def _reference_sorted(test_set, threshold):
         reference = {}
 
         for i, rating in enumerate(test_set):
@@ -48,21 +48,26 @@ class Evaluator:
         return reference
 
     @staticmethod
-    def _get_distribution(training_set):
-        distribution = {}
+    def _count_items(training_set):
+        model_items = {}
+        model_top_k = []
 
         for rating in training_set:
             item = rating[1]
 
-            if item not in distribution:
-                distribution[item] = 1
+            if item not in model_items:
+                model_items[item] = 1
             else:
-                distribution[item] += 1
+                model_items[item] += 1
 
-        for item in distribution:
-            distribution[item] /= len(training_set)
+        # Sort items by the number of ratings
+        for item in sorted(model_items, key=model_items.get, reverse=True):
+            model_top_k.append(item)
 
-        return distribution
+        for item in model_items:
+            model_items[item] /= len(training_set)
+
+        return model_items, model_top_k
 
     def coverage(self):
         recommended_items = set()
@@ -75,7 +80,7 @@ class Evaluator:
             for item in predicted_list:
                 recommended_items.add(item)
 
-        return len(recommended_items) / len(self.distribution)
+        return len(recommended_items) / len(self.model_items)
 
     coverage.name = "Coverage"
     coverage.sort = 0
@@ -145,7 +150,7 @@ class Evaluator:
 
         return dcg.mean() / idcg.mean()
 
-    ndcg.name = "nDCG"
+    ndcg.name = "NDCG"
     ndcg.sort = 3
 
     def novelty(self):
@@ -158,7 +163,7 @@ class Evaluator:
 
             # For each item
             for item in predicted_list:
-                item_distribution = self.distribution[item]
+                item_distribution = self.model_items[item]
 
                 # log(0) = 0 by definition
                 if item_distribution != 0:
@@ -188,3 +193,29 @@ class Evaluator:
 
     diversity.name = "Diversity"
     diversity.sort = 5
+
+    def serendipity(self):
+        values = np.full(len(self.user_set), 0.0, dtype=float)
+        primitive_list = self.model_top_k[:self.k]
+
+        # For each user
+        for user_index, user in enumerate(self.user_set):
+            predicted_list = self.recommendations[user_index]
+            reference_list = self.reference_sorted[user]
+
+            hit = 0
+
+            # For each item
+            for item in predicted_list:
+                if item in primitive_list:
+                    continue
+
+                if item in reference_list:
+                    hit += 1
+
+            values[user_index] = hit / self.k
+
+        return values.mean()
+
+    serendipity.name = "Serendipity"
+    serendipity.sort = 6

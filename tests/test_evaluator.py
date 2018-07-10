@@ -67,3 +67,8 @@ class EvaluatorTestSuite(unittest.TestCase):
         evaluator = reclab.Evaluator(exp, training_set, test_set, user_set, recommendations)
         diversity = evaluator.diversity()
         self.assertAlmostEqual((2 - np.sqrt(2)) / 3, diversity)
+
+    def test_serendipity(self):
+        evaluator = reclab.Evaluator(exp, training_set, test_set, user_set, recommendations)
+        serendipity = evaluator.serendipity()
+        self.assertAlmostEqual(1 / 6, serendipity)
