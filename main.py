@@ -93,8 +93,7 @@ class Experiment(Resource):
         db['experiments'].insert_one(exp)
 
         # Start the experiment
-        evaluator = reclab.Experiment(exp['id'], db, config)
-        evaluator.start()
+        reclab.Experiment(exp['id'], db, config).start()
 
         del exp['_id']
         return exp, 201
