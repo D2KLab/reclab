@@ -2,7 +2,7 @@ import csv
 import json
 import subprocess
 from subprocess import SubprocessError
-from threading import Thread
+from threading import Thread, Lock
 
 import requests
 from requests.exceptions import ConnectionError, HTTPError, Timeout
@@ -10,6 +10,8 @@ from requests.exceptions import ConnectionError, HTTPError, Timeout
 from recommenders import Model, Recommendation
 
 exec_path = "../mymedialite"
+exec_memory = 4 * 1024 * 1024
+exec_lock = Lock()
 
 
 def mymedialite(models, models_lock, phases, phases_lock, recommender):
@@ -62,12 +64,15 @@ def mymedialite(models, models_lock, phases, phases_lock, recommender):
                 for item in sorted(model_items, key=model_items.get, reverse=True):
                     model_top_k.append(item)
 
-                subprocess.run("mono " + exec_path +
+                exec_lock.acquire()
+                subprocess.run("ulimit -d " + str(exec_memory) + " && "
+                               "mono " + exec_path +
                                "/item_recommendation.exe "
                                "--training-file=" + exp_path + "/training.txt "
                                "--recommender=" + recommender + " "
                                "--save-model=" + exp_path + "/model.txt", shell=True,
                                check=True)
+                exec_lock.release()
 
                 models_lock.acquire()
                 models[self.exp_id] = {'top_k': model_top_k,
@@ -80,6 +85,8 @@ def mymedialite(models, models_lock, phases, phases_lock, recommender):
                 phases_lock.release()
 
             except (ConnectionError, HTTPError, Timeout, SubprocessError, ValueError, TypeError, KeyError):
+                if exec_lock.locked():
+                    exec_lock.release()
                 phases_lock.acquire()
                 subprocess.run("rm -r " + exp_path, shell=True)
                 del phases[self.exp_id]
@@ -103,7 +110,9 @@ def mymedialite(models, models_lock, phases, phases_lock, recommender):
                     for user in self.user_set:
                         writer.writerow([user])
 
-                subprocess.run("mono " + exec_path +
+                exec_lock.acquire()
+                subprocess.run("ulimit -d " + str(exec_memory) + " && "
+                               "mono " + exec_path +
                                "/item_recommendation.exe "
                                "--training-file=" + exp_path + "/training.txt "
                                "--recommender=" + recommender + " "
@@ -111,6 +120,7 @@ def mymedialite(models, models_lock, phases, phases_lock, recommender):
                                "--test-users=" + exp_path + "/users.txt "
                                "--prediction-file=" + exp_path + "/recommendations.txt",
                                shell=True, check=True)
+                exec_lock.release()
 
                 mml_rec = {}
 
@@ -172,6 +182,8 @@ def mymedialite(models, models_lock, phases, phases_lock, recommender):
                 phases_lock.release()
 
             except (ValueError, TypeError, KeyError):
+                if exec_lock.locked():
+                    exec_lock.release()
                 phases_lock.acquire()
                 models_lock.acquire()
                 subprocess.run("rm -r " + exp_path, shell=True)
