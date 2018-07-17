@@ -94,7 +94,6 @@ $(function () {
             let name = configs['recommenders'][recommender]['name'];
             let option = $('<option>');
             option.attr('value', recommender);
-            option.attr('selected', 'selected');
             option.text(name);
             recommenders.append(option);
         }
