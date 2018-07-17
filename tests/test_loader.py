@@ -21,14 +21,6 @@ class LoaderTestSuite(unittest.TestCase):
         self.assertEqual([0, 0, 5, 978300760], ratings[0])
         self.assertEqual([6039, 26, 4, 956715569], ratings[1000208])
 
-    def test_librarything(self):
-        loader = reclab.loader_instance({"format": "uir", "path": "../datasets/librarything/ratings.csv",
-                                         "sep": " ", "skip": 0})
-        ratings = loader.load()
-        self.assertEqual(2056487, len(ratings))
-        self.assertEqual([0, 0, 10, 0], ratings[0])
-        self.assertEqual([7278, 26793, 10, 2056486], ratings[2056486])
-
     def test_lastfm(self):
         loader = reclab.loader_instance({"format": "uir", "path": "../datasets/lastfm/ratings.csv",
                                          "sep": "\t", "skip": 1})
