@@ -1,6 +1,6 @@
 {
   "url": "http://localhost:5000",
-  "version": "alpha",
+  "version": "1.0.0",
   "mongodb": {
     "host": "localhost",
     "port": 27017,
