@@ -24,7 +24,7 @@
       "skip": 0
     },
     "lastfm": {
-      "name": "LastFM",
+      "name": "HetRec LastFM",
       "desc": "92,834 user-artist relations from 1,892 users on 17,632 artists.",
       "format": "uir",
       "path": "datasets/lastfm/ratings.csv",
