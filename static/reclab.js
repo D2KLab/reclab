@@ -169,7 +169,7 @@ $(function () {
         };
 
         function updateResults() {
-            $.getJSON('/experiment/' + exp_id, function (json) {
+            $.getJSON('experiment/' + exp_id, function (json) {
                 let running = createResultsTable(json);
                 if (json['results'].length !== json['recommenders'].length || running === true) {
                     setTimeout(updateResults, counter * 1000);
@@ -180,7 +180,7 @@ $(function () {
         }
 
         $.ajax({
-            url: '/experiment',
+            url: 'experiment',
             type: "post",
             data: JSON.stringify(exp),
             dataType: "json",
@@ -206,7 +206,7 @@ $(function () {
     }
 
     function loadExperiment() {
-        $.getJSON('/experiment/' + exp_id, function (json) {
+        $.getJSON('experiment/' + exp_id, function (json) {
             initializeImmutableForm(json);
             let running = createResultsTable(json);
             if (json['results'].length !== json['recommenders'].length || running === true) {
@@ -215,7 +215,7 @@ $(function () {
         });
     }
 
-    $.getJSON('/config', function (json) {
+    $.getJSON('config', function (json) {
         configs = json;
         let id = getId();
         if (id > 0) {
