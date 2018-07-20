@@ -127,7 +127,7 @@ $(function () {
             tr.append($('<td>').text(configs['recommenders'][recommender]['name']));
             if (json['results'][i]['status'] === 'done') {
                 for (let metric in configs['metrics']) {
-                    if (json['results'][i][metric]) {
+                    if (json['results'][i][metric] !== undefined) {
                         tr.append($('<td>').text(json['results'][i][metric].toFixed(6)));
                     } else {
                         tr.append($('<td>'));
@@ -135,11 +135,11 @@ $(function () {
                 }
             } else if (json['results'][i]['status'] === 'running') {
                 running = true;
-                for (let metric in configs['metrics']) {
+                for (let _ in configs['metrics']) {
                     tr.append($('<td>').text('Running'));
                 }
             } else {
-                for (let metric in configs['metrics']) {
+                for (let _ in configs['metrics']) {
                     tr.append($('<td>').text('Failed'));
                 }
             }
