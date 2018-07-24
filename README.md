@@ -2,6 +2,10 @@
 
 RecLab is a REST-based offline evaluation framework for recommender systems developed in Python.
 
+## Demo
+
+A demo of RecLab is available at [http://datascience.ismb.it/reclab/](http://datascience.ismb.it/reclab/).
+
 ## Architecture
 
 RecLab consists of a main application, that manages the interaction with the users and the evaluation process, and a set
@@ -30,7 +34,3 @@ You can run RecLab and all the included recommenders with the following script.
 ```bash
 $ ./run.sh
 ```
-
-## Demo
-
-A live demo of RecLab is available at [http://datascience.ismb.it/reclab/](http://datascience.ismb.it/reclab/).
