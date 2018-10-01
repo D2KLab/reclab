@@ -34,3 +34,9 @@ You can run RecLab and all the included recommenders with the following script.
 ```bash
 $ ./run.sh
 ```
+
+## Team
+
+- Diego Monti <diego.monti@polito.it>
+- Giuseppe Rizzo <giuseppe.rizzo@ismb.it>
+- Maurizio Morisio <maurizio.morisio@polito.it>
