@@ -181,7 +181,7 @@ def mymedialite(models, models_lock, phases, phases_lock, recommender):
                 models_lock.release()
                 phases_lock.release()
 
-            except (ValueError, TypeError, KeyError):
+            except (SubprocessError, ValueError, TypeError, KeyError):
                 if exec_lock.locked():
                     exec_lock.release()
                 phases_lock.acquire()
