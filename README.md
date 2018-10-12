@@ -35,6 +35,10 @@ You can run RecLab and all the included recommenders with the following script.
 $ ./run.sh
 ```
 
+## Publications
+
+- Monti D., Rizzo G., Morisio M. (2018). A Distributed and Accountable Approach to Offline Recommender Systems Evaluation. In REVEAL 2018 Workshop on Offline Evaluation for Recommender Systems. https://arxiv.org/abs/1810.04957
+
 ## Team
 
 - Diego Monti <diego.monti@polito.it>
