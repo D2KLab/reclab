@@ -45,10 +45,10 @@ class Experiment(Resource):
             abort(400)
 
         try:
-            if content['dataset'] not in config['datasets']:
+            if not any(dataset['id'] == content['dataset'] for dataset in config['datasets']):
                 abort(400)
 
-            if content['splitter'] not in reclab.splitter_list():
+            if not any(splitter['id'] == content['splitter'] for splitter in reclab.splitter_list()):
                 abort(400)
 
             try:
@@ -72,8 +72,8 @@ class Experiment(Resource):
             except ValueError:
                 abort(400)
 
-            for recommender in content['recommenders']:
-                if recommender not in config['recommenders']:
+            for recommender_id in content['recommenders']:
+                if not any(recommender['id'] == recommender_id for recommender in config['recommenders']):
                     abort(400)
 
         except KeyError:
@@ -107,8 +107,14 @@ class Dataset(Resource):
         if exp is None:
             abort(404)
 
+        # Get the dataset
+        target_dataset = None
+        for dataset in config['datasets']:
+            if dataset['id'] == exp['dataset']:
+                target_dataset = dataset
+
         # Load the dataset
-        loader = reclab.loader_instance(config['datasets'][exp['dataset']])
+        loader = reclab.loader_instance(target_dataset)
         ratings = loader.load()
 
         # Split the dataset
@@ -137,11 +143,11 @@ class Status(Resource):
 
         for recommender in config['recommenders']:
             try:
-                r = requests.get(config['recommenders'][recommender]['url'], timeout=5)
+                r = requests.get(recommender['url'], timeout=5)
                 r.raise_for_status()
-                status[recommender] = "up"
+                status[recommender['id']] = "up"
             except (ConnectionError, HTTPError, Timeout):
-                status[recommender] = "down"
+                status[recommender['id']] = "down"
                 down = True
 
         if down:

@@ -6,8 +6,9 @@
     "port": 27017,
     "db": "reclab"
   },
-  "datasets": {
-    "ml-100k": {
+  "datasets": [
+    {
+      "id": "ml-100k",
       "name": "MovieLens 100K",
       "desc": "100,000 ratings from 1,000 users on 1,700 movies.",
       "format": "uirt",
@@ -15,7 +16,8 @@
       "sep": "\t",
       "skip": 0
     },
-    "ml-1m": {
+    {
+      "id": "ml-1m",
       "name": "MovieLens 1M",
       "desc": "1 million ratings from 6,000 users on 4,000 movies.",
       "format": "uirt",
@@ -23,7 +25,8 @@
       "sep": "::",
       "skip": 0
     },
-    "lastfm": {
+    {
+      "id": "lastfm",
       "name": "HetRec LastFM",
       "desc": "92,834 user-artist relations from 1,892 users on 17,632 artists.",
       "format": "uir",
@@ -31,31 +34,37 @@
       "sep": "\t",
       "skip": 1
     }
-  },
-  "recommenders": {
-    "random": {
+  ],
+  "recommenders": [
+    {
+      "id": "random",
       "name": "Random",
       "url": "http://localhost:6001"
     },
-    "most_popular": {
+    {
+      "id": "most_popular",
       "name": "Most Popular",
       "url": "http://localhost:6002"
     },
-    "itemknn": {
+    {
+      "id": "itemknn",
       "name": "Item KNN",
       "url": "http://localhost:6003"
     },
-    "userknn": {
+    {
+      "id": "userknn",
       "name": "User KNN",
       "url": "http://localhost:6004"
     },
-    "bprmf": {
+    {
+      "id": "bprmf",
       "name": "BPRMF",
       "url": "http://localhost:6005"
     },
-    "wrmf": {
+    {
+      "id": "wrmf",
       "name": "WRMF",
       "url": "http://localhost:6006"
     }
-  }
+  ]
 }

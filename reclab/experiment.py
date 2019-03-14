@@ -12,8 +12,14 @@ from .splitter import splitter_instance
 
 
 def get_splitted_dataset(exp, config):
+    # Get the dataset
+    target_dataset = None
+    for dataset in config['datasets']:
+        if dataset['id'] == exp['dataset']:
+            target_dataset = dataset
+
     # Load the dataset
-    loader = loader_instance(config['datasets'][exp['dataset']])
+    loader = loader_instance(target_dataset)
     ratings = loader.load()
 
     # Split the dataset
@@ -30,12 +36,16 @@ def get_user_set(test_set):
     return list(user_set)
 
 
-def run_recommender(exp, recommender, user_set, config):
-    url = config['recommenders'][recommender]['url']
+def run_recommender(exp, recommender_id, user_set, config):
+    # Get the url
+    target_url = None
+    for recommender in config['recommenders']:
+        if recommender['id'] == recommender_id:
+            target_url = recommender['url']
 
     # Train the recommender
     try:
-        r = requests.post(url + '/model/' + str(exp['id']),
+        r = requests.post(target_url + '/model/' + str(exp['id']),
                           json={'callback': config['url'], 'threshold': exp['threshold']}, timeout=60)
         r.raise_for_status()
     except (ConnectionError, HTTPError, Timeout):
@@ -50,7 +60,7 @@ def run_recommender(exp, recommender, user_set, config):
         counter += 1
         try:
             assert counter <= 60
-            r = requests.get(url + '/model/' + str(exp['id']), timeout=60)
+            r = requests.get(target_url + '/model/' + str(exp['id']), timeout=60)
             r.raise_for_status()
             response_json = json.loads(r.text)
             status = response_json['status']
@@ -59,7 +69,7 @@ def run_recommender(exp, recommender, user_set, config):
 
     # Get top-k recommendations
     try:
-        r = requests.post(url + "/recommendation/" + str(exp['id']) + "?k=" + str(exp['k']), json=user_set, timeout=60)
+        r = requests.post(target_url + "/recommendation/" + str(exp['id']) + "?k=" + str(exp['k']), json=user_set, timeout=60)
         r.raise_for_status()
     except (ConnectionError, HTTPError, Timeout):
         return
@@ -74,7 +84,7 @@ def run_recommender(exp, recommender, user_set, config):
         counter += 1
         try:
             assert counter <= 60
-            r = requests.get(url + '/recommendation/' + str(exp['id']), timeout=60)
+            r = requests.get(target_url + '/recommendation/' + str(exp['id']), timeout=60)
             r.raise_for_status()
             response_json = json.loads(r.text)
             status = response_json['status']
@@ -88,7 +98,7 @@ def run_recommender(exp, recommender, user_set, config):
 
     # Delete the model
     try:
-        r = requests.delete(url + '/model/' + str(exp['id']), timeout=60)
+        r = requests.delete(target_url + '/model/' + str(exp['id']), timeout=60)
         r.raise_for_status()
     except (ConnectionError, HTTPError, Timeout):
         pass

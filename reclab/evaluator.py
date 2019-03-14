@@ -7,15 +7,14 @@ from .similarity import CosineSimilarity
 
 
 def evaluator_list():
-    evaluators = {}
+    evaluators = []
     for name, obj in inspect.getmembers(Evaluator):
         if hasattr(obj, 'name') and hasattr(obj, 'sort'):
-            evaluators[name] = {'name': obj.name,
-                                'sort': obj.sort}
-    sorted_evaluators = {}
-    for key in sorted(evaluators, key=lambda x: evaluators[x]['sort']):
-        sorted_evaluators[key] = evaluators[key]
-    return sorted_evaluators
+            evaluators.append({'id': name,
+                               'name': obj.name,
+                               'sort': obj.sort})
+    evaluators.sort(key=lambda x: x['sort'])
+    return evaluators
 
 
 class Evaluator:

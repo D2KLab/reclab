@@ -10,42 +10,42 @@ $(function () {
 
         // Datasets
         let datasets = $('#dataset').prop('disabled', true);
-        for (let dataset in configs['datasets']) {
-            if (dataset === json['dataset']) {
-                let name = configs['datasets'][dataset]['name'];
+        configs['datasets'].forEach(function (dataset) {
+             if (dataset['id'] === json['dataset']) {
+                let name = dataset['name'];
                 let option = $('<option>');
-                option.attr('value', dataset);
+                option.attr('value', dataset['id']);
                 option.text(name);
                 datasets.append(option);
-                $('#dataset-help').text(configs['datasets'][dataset]['desc']);
+                $('#dataset-help').text(dataset['desc']);
             }
-        }
+        });
 
         // Splitters
         let splitters = $('#splitter').prop('disabled', true);
-        for (let splitter in configs['splitters']) {
-            if (splitter === json['splitter']) {
-                let name = configs['splitters'][splitter]['name'];
+        configs['splitters'].forEach(function (splitter) {
+            if (splitter['id'] === json['splitter']) {
+                let name = splitter['name'];
                 let option = $('<option>');
-                option.attr('value', splitter);
+                option.attr('value', splitter['id']);
                 option.text(name);
                 splitters.append(option);
-                $('#splitter-help').text(configs['splitters'][splitter]['desc']);
+                $('#splitter-help').text(splitter['desc']);
             }
-        }
+        });
 
         // Recommenders
         let recommenders = $('#recommenders').prop('disabled', true);
-        for (let recommender in configs['recommenders']) {
-            let name = configs['recommenders'][recommender]['name'];
+        configs['recommenders'].forEach(function (recommender) {
+            let name = recommender['name'];
             let option = $('<option>');
-            option.attr('value', recommender);
+            option.attr('value', recommender['id']);
             option.text(name);
-            if (json['recommenders'].includes(recommender)) {
+            if (json['recommenders'].includes(recommender['id'])) {
                 option.attr('selected', 'selected');
             }
             recommenders.append(option);
-        }
+        });
 
         // Values
         $("#ratio").val(json['test_size'] * 100).prop('disabled', true);
@@ -56,47 +56,55 @@ $(function () {
     function initializeForm() {
         // Datasets
         let datasets = $('#dataset');
-        for (let dataset in configs['datasets']) {
-            let name = configs['datasets'][dataset]['name'];
+        configs['datasets'].forEach(function (dataset) {
+            let name = dataset['name'];
             let option = $('<option>');
-            option.attr('value', dataset);
+            option.attr('value', dataset['id']);
             option.text(name);
             datasets.append(option);
-        }
+        });
 
         datasets.change(function () {
             let value = $("#dataset option:selected").first().attr("value");
-            $('#dataset-help').text(configs['datasets'][value]['desc']);
+            configs['datasets'].forEach(function (dataset) {
+                if (dataset['id'] === value) {
+                    $('#dataset-help').text(dataset['desc']);
+                }
+            });
         });
 
         datasets.change();
 
         // Splitters
         let splitters = $('#splitter');
-        for (let splitter in configs['splitters']) {
-            let name = configs['splitters'][splitter]['name'];
+        configs['splitters'].forEach(function (splitter) {
+            let name = splitter['name'];
             let option = $('<option>');
-            option.attr('value', splitter);
+            option.attr('value', splitter['id']);
             option.text(name);
             splitters.append(option);
-        }
+        });
 
         splitters.change(function () {
             let value = $("#splitter option:selected").first().attr("value");
-            $('#splitter-help').text(configs['splitters'][value]['desc']);
+            configs['splitters'].forEach(function (splitter) {
+                if (splitter['id'] === value) {
+                    $('#splitter-help').text(splitter['desc']);
+                }
+            });
         });
 
         splitters.change();
 
         // Recommenders
         let recommenders = $('#recommenders');
-        for (let recommender in configs['recommenders']) {
-            let name = configs['recommenders'][recommender]['name'];
+        configs['recommenders'].forEach(function (recommender) {
+            let name = recommender['name'];
             let option = $('<option>');
-            option.attr('value', recommender);
+            option.attr('value', recommender['id']);
             option.text(name);
             recommenders.append(option);
-        }
+        });
 
         // Values
         $("#ratio").val(20);
@@ -116,32 +124,36 @@ $(function () {
         let tr = $('<tr>');
         table.append(tr);
         tr.append($('<th>').text('Algorithm'));
-        for (let metric in configs['metrics']) {
-            tr.append($('<th>').text(configs['metrics'][metric]['name']));
-        }
+        configs['metrics'].forEach(function (metric) {
+            tr.append($('<th>').text(metric['name']));
+        });
 
         for (let i = 0; i < json['results'].length; i++) {
             let tr = $('<tr>');
             table.append(tr);
-            let recommender = json['results'][i]['name'];
-            tr.append($('<td>').text(configs['recommenders'][recommender]['name']));
+            let recommender_id = json['results'][i]['name'];
+            configs['recommenders'].forEach(function (recommender) {
+                if (recommender['id'] === recommender_id) {
+                    tr.append($('<td>').text(recommender['name']));
+                }
+            });
             if (json['results'][i]['status'] === 'done') {
-                for (let metric in configs['metrics']) {
-                    if (json['results'][i][metric] !== undefined) {
-                        tr.append($('<td>').text(json['results'][i][metric].toFixed(6)));
+                configs['metrics'].forEach(function (metric) {
+                    if (json['results'][i][metric['id']] !== undefined) {
+                        tr.append($('<td>').text(json['results'][i][metric['id']].toFixed(6)));
                     } else {
                         tr.append($('<td>'));
                     }
-                }
+                });
             } else if (json['results'][i]['status'] === 'running') {
                 running = true;
-                for (let _ in configs['metrics']) {
+                configs['metrics'].forEach(function () {
                     tr.append($('<td>').text('Running'));
-                }
+                });
             } else {
-                for (let _ in configs['metrics']) {
+                configs['metrics'].forEach(function () {
                     tr.append($('<td>').text('Failed'));
-                }
+                });
             }
         }
 

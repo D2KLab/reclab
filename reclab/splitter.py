@@ -13,11 +13,12 @@ def splitter_instance(config):
 
 
 def splitter_list():
-    splitters = {}
+    splitters = []
     for name, obj in inspect.getmembers(sys.modules[__name__]):
         if hasattr(obj, 'id') and isinstance(obj.id, str):
-            splitters[obj.id] = {'name': obj.name,
-                                 'desc': obj.desc}
+            splitters.append({'id': obj.id,
+                              'name': obj.name,
+                              'desc': obj.desc})
     return splitters
 
 
